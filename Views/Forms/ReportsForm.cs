@@ -1,0 +1,343 @@
+using System;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using Agile_Project.Controllers;
+using Agile_Project.Models.Entities;
+
+namespace Agile_Project.Views.Forms
+{
+    public class ReportsForm : Form
+    {
+        private readonly Project _project;
+        private readonly UserStory? _focusStory;
+        private readonly UserStoryController _storyCtrl;
+        private readonly TaskController _taskCtrl;
+        private readonly ProjectController _projectCtrl;
+
+        public ReportsForm(Project project, UserStory? focusStory,
+            UserStoryController storyCtrl, TaskController taskCtrl, ProjectController projectCtrl)
+        {
+            _project = project;
+            _focusStory = focusStory;
+            _storyCtrl = storyCtrl;
+            _taskCtrl = taskCtrl;
+            _projectCtrl = projectCtrl;
+
+            Text = $"Reports — {project.Name}";
+            Size = new Size(660, 520);
+            FormBorderStyle = FormBorderStyle.Sizable;
+            StartPosition = FormStartPosition.CenterParent;
+            BackColor = Color.White;
+            Font = new Font("Segoe UI", 9f);
+
+            BuildUI();
+        }
+
+        private void BuildUI()
+        {
+            var tabs = new TabControl { Dock = DockStyle.Fill };
+
+            tabs.TabPages.Add(BuildProjectReportTab());
+            tabs.TabPages.Add(BuildSprintReportTab());
+            tabs.TabPages.Add(BuildUserStoryReportTab());
+            tabs.TabPages.Add(BuildPersonReportTab());
+
+            Controls.Add(tabs);
+
+            if (_focusStory != null)
+                tabs.SelectedIndex = 2;
+        }
+
+        // ── Project Report ────────────────────────────────────────────
+
+        private TabPage BuildProjectReportTab()
+        {
+            var tp = new TabPage("Project");
+            var txt = MakeReportTextBox();
+            tp.Controls.Add(txt);
+
+            var stories = _storyCtrl.GetByProject(_project.ProjectId);
+            int total = stories.Count;
+            int done = stories.Count(s => s.State == UserStoryState.Done);
+            double rate = total == 0 ? 0 : Math.Round(done * 100.0 / total, 1);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"PROJECT REPORT: {_project.Name}");
+            sb.AppendLine($"Description: {_project.Description}");
+            sb.AppendLine(new string('─', 50));
+            sb.AppendLine($"Total user stories : {total}");
+            sb.AppendLine($"Done               : {done}");
+            sb.AppendLine($"In Sprint          : {stories.Count(s => s.State == UserStoryState.InSprint)}");
+            sb.AppendLine($"Backlog            : {stories.Count(s => s.State == UserStoryState.ProjectBacklog)}");
+            sb.AppendLine($"Completion rate    : {rate}%");
+            sb.AppendLine();
+            sb.AppendLine("User Stories:");
+            sb.AppendLine(new string('─', 50));
+            foreach (var s in stories)
+            {
+                var tasks = _taskCtrl.GetByUserStory(s.UserStoryId);
+                int tDone = tasks.Count(t => t.State == TaskState.Done);
+                sb.AppendLine($"  [{StateLabel(s.State)}]  {s.Title}  (Priority: {s.Priority}, Tasks: {tDone}/{tasks.Count})");
+            }
+
+            txt.Text = sb.ToString();
+            return tp;
+        }
+
+        // ── Sprint Report ─────────────────────────────────────────────
+
+        private TabPage BuildSprintReportTab()
+        {
+            var tp = new TabPage("Sprint");
+            var txt = MakeReportTextBox();
+            tp.Controls.Add(txt);
+
+            var stories = _storyCtrl.GetByProject(_project.ProjectId)
+                .Where(s => s.State == UserStoryState.InSprint).ToList();
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"SPRINT REPORT — {_project.Name}");
+            sb.AppendLine(new string('─', 50));
+
+            int totalTasks = 0, doneTasks = 0, overdueTasks = 0;
+            float totalPlanned = 0, totalActual = 0;
+
+            foreach (var s in stories)
+            {
+                var tasks = _taskCtrl.GetByUserStory(s.UserStoryId);
+                totalTasks += tasks.Count;
+                doneTasks += tasks.Count(t => t.State == TaskState.Done);
+                overdueTasks += tasks.Count(t =>
+                    t.PlannedEndDate.HasValue && t.PlannedEndDate.Value.Date <= DateTime.Today);
+                totalPlanned += tasks.Sum(t => t.PlannedTime);
+                totalActual += tasks.Sum(t => t.ActualTime);
+            }
+
+            double realRate = totalTasks == 0 ? 0 : Math.Round(doneTasks * 100.0 / totalTasks, 1);
+            double plannedRate = totalTasks == 0 ? 0 : Math.Round(overdueTasks * 100.0 / totalTasks, 1);
+
+            sb.AppendLine($"Stories in sprint   : {stories.Count}");
+            sb.AppendLine($"Total tasks         : {totalTasks}");
+            sb.AppendLine($"Tasks done          : {doneTasks}");
+            sb.AppendLine($"Real completion     : {realRate}%");
+            sb.AppendLine($"Planned completion  : {plannedRate}%");
+            sb.AppendLine($"Total planned time  : {totalPlanned:F1} h");
+            sb.AppendLine($"Total actual time   : {totalActual:F1} h");
+            sb.AppendLine();
+            sb.AppendLine("Stories:");
+            sb.AppendLine(new string('─', 50));
+
+            foreach (var s in stories)
+            {
+                var tasks = _taskCtrl.GetByUserStory(s.UserStoryId);
+                int td = tasks.Count(t => t.State == TaskState.Done);
+                sb.AppendLine($"  {s.Title}  ({td}/{tasks.Count} done)");
+                foreach (var t in tasks)
+                    sb.AppendLine($"    [{TaskStateLabel(t.State)}] {t.Title}  ({t.PlannedTime:F1}h planned / {t.ActualTime:F1}h actual)");
+            }
+
+            txt.Text = sb.ToString();
+            return tp;
+        }
+
+        // ── User Story Report ─────────────────────────────────────────
+
+        private TabPage BuildUserStoryReportTab()
+        {
+            var tp = new TabPage("User Story");
+
+            // Dùng TableLayoutPanel thay vì tính txt.Top/Height tay
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.White,
+                Padding = new Padding(0)
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));  // combobox
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // report text
+
+            // --- Combobox row ---
+            var cmbPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                BackColor = Color.FromArgb(250, 250, 249),
+                Padding = new Padding(6, 5, 6, 0)
+            };
+            var cmbStories = new ComboBox
+            {
+                Width = 320,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            var allStories = _storyCtrl.GetByProject(_project.ProjectId);
+            cmbStories.DataSource = allStories;
+            cmbStories.DisplayMember = "Title";
+            if (_focusStory != null)
+            {
+                var match = allStories.FirstOrDefault(s => s.UserStoryId == _focusStory.UserStoryId);
+                if (match != null) cmbStories.SelectedItem = match;
+            }
+            cmbPanel.Controls.Add(cmbStories);
+            layout.Controls.Add(cmbPanel, 0, 0);
+
+            // --- Report text ---
+            var txt = MakeReportTextBox();
+            layout.Controls.Add(txt, 0, 1);
+
+            void RefreshStoryReport()
+            {
+                if (cmbStories.SelectedItem is not UserStory story) return;
+                var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
+                int total = tasks.Count;
+                int done = tasks.Count(t => t.State == TaskState.Done);
+                int overdue = tasks.Count(t => t.PlannedEndDate.HasValue && t.PlannedEndDate.Value.Date < DateTime.Today);
+                float planned = tasks.Sum(t => t.PlannedTime);
+                float actual = tasks.Sum(t => t.ActualTime);
+                double realRate = total == 0 ? 0 : Math.Round(done * 100.0 / total, 1);
+                double plannedRate = total == 0 ? 0 : Math.Round(overdue * 100.0 / total, 1);
+
+                var sb = new StringBuilder();
+                sb.AppendLine($"USER STORY: {story.Title}");
+                sb.AppendLine($"State       : {StateLabel(story.State)}");
+                sb.AppendLine($"Priority    : {story.Priority}");
+                sb.AppendLine($"Description : {story.Description}");
+                sb.AppendLine(new string('─', 50));
+                sb.AppendLine($"Total tasks         : {total}");
+                sb.AppendLine($"Done                : {done}");
+                sb.AppendLine($"Real completion     : {realRate}%");
+                sb.AppendLine($"Planned completion  : {plannedRate}%");
+                sb.AppendLine($"Total planned time  : {planned:F1} h");
+                sb.AppendLine($"Total actual time   : {actual:F1} h");
+                sb.AppendLine();
+                sb.AppendLine("Tasks:");
+                sb.AppendLine(new string('─', 50));
+                foreach (var t in tasks)
+                    sb.AppendLine($"  [{TaskStateLabel(t.State)}] {t.Title}  (Pri:{t.Priority} | {t.PlannedTime:F1}h/{t.ActualTime:F1}h | Labels: {t.CategoryLabels})");
+
+                txt.Text = sb.ToString();
+            }
+
+            cmbStories.SelectedIndexChanged += (s, e) => RefreshStoryReport();
+            RefreshStoryReport();
+
+            tp.Controls.Add(layout);
+            return tp;
+        }
+
+        // ── Person Report ─────────────────────────────────────────────
+
+        private TabPage BuildPersonReportTab()
+        {
+            var tp = new TabPage("Person");
+
+            // Dùng TableLayoutPanel thay vì tính txt.Top/Height tay
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.White,
+                Padding = new Padding(0)
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));  // combobox
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // report text
+
+            // --- Combobox row ---
+            var cmbPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                BackColor = Color.FromArgb(250, 250, 249),
+                Padding = new Padding(6, 5, 6, 0)
+            };
+            var cmbPersons = new ComboBox
+            {
+                Width = 260,
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            var allPersons = _projectCtrl.GetAllPersons();
+            cmbPersons.DataSource = allPersons;
+            cmbPersons.DisplayMember = "Name";
+            cmbPanel.Controls.Add(cmbPersons);
+            layout.Controls.Add(cmbPanel, 0, 0);
+
+            // --- Report text ---
+            var txt = MakeReportTextBox();
+            layout.Controls.Add(txt, 0, 1);
+
+            void RefreshPersonReport()
+            {
+                if (cmbPersons.SelectedItem is not Person person) return;
+                var sb = new StringBuilder();
+                sb.AppendLine($"PERSON REPORT: {person.Name}");
+                sb.AppendLine($"Role: {person.Role}");
+                sb.AppendLine(new string('─', 50));
+
+                var projects = _projectCtrl.GetAllProjects()
+                    .Where(p => _projectCtrl.GetPersonsByProject(p.ProjectId)
+                        .Any(x => x.PersonId == person.PersonId));
+
+                foreach (var proj in projects)
+                {
+                    sb.AppendLine($"\nProject: {proj.Name}");
+                    var stories = _storyCtrl.GetByProject(proj.ProjectId);
+                    bool hasTasks = false;
+                    foreach (var story in stories)
+                    {
+                        var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
+                        foreach (var t in tasks)
+                        {
+                            sb.AppendLine($"  [{TaskStateLabel(t.State)}] {t.Title}  (Story: {story.Title})");
+                            hasTasks = true;
+                        }
+                    }
+                    if (!hasTasks) sb.AppendLine("  (no tasks)");
+                }
+
+                txt.Text = sb.ToString();
+            }
+
+            cmbPersons.SelectedIndexChanged += (s, e) => RefreshPersonReport();
+            RefreshPersonReport();
+
+            tp.Controls.Add(layout);
+            return tp;
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────
+
+        private RichTextBox MakeReportTextBox()
+        {
+            return new RichTextBox
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                Font = new Font("Consolas", 9f),
+                BackColor = Color.FromArgb(250, 250, 249),
+                BorderStyle = BorderStyle.None,
+                ScrollBars = RichTextBoxScrollBars.Vertical,
+                ForeColor = Color.FromArgb(40, 40, 38)
+            };
+        }
+
+        private static string StateLabel(UserStoryState s) => s switch
+        {
+            UserStoryState.ProjectBacklog => "Backlog",
+            UserStoryState.InSprint => "In Sprint",
+            UserStoryState.Done => "Done",
+            _ => s.ToString()
+        };
+
+        private static string TaskStateLabel(TaskState s) => s switch
+        {
+            TaskState.ToBeDone => "TODO",
+            TaskState.InProcess => "IN PROGRESS",
+            TaskState.Done => "DONE",
+            _ => s.ToString()
+        };
+    }
+}
