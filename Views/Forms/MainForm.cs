@@ -66,7 +66,7 @@ namespace Agile_Project.Views.Forms
                     0, topbar.Height - 1, topbar.Width, topbar.Height - 1);
             };
 
-            // Dùng FlowLayoutPanel để các control tự xếp hàng ngang, không bị chồng lên nhau
+            // Dung FlowLayoutPanel de cac control tu xep hang ngang, khong bi chong len nhau
             var flow = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,

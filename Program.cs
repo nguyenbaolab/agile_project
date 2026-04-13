@@ -1,10 +1,15 @@
+using System.Runtime.InteropServices;
 using Agile_Project.Database;
 using Agile_Project.Views.Forms;
+using Agile_Project.Views.Console;
 
 namespace Agile_Project
 {
     internal static class Program
     {
+        [DllImport("kernel32.dll")]
+        private static extern bool AllocConsole();
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -17,7 +22,18 @@ namespace Agile_Project
 
             DatabaseInitializer.Initialize();
 
-            Application.Run(new MainForm());
+            bool useGUI = false; // doi thanh false de chay Console
+
+            if (useGUI)
+            {
+                ApplicationConfiguration.Initialize();
+                Application.Run(new MainForm());
+            }
+            else
+            {
+                AllocConsole();
+                new ConsoleUI().Run();
+            }
         }
     }
 }

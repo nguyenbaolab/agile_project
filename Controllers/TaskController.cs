@@ -137,5 +137,10 @@ namespace Agile_Project.Controllers
             }
             return true;
         }
+
+        public List<Person> GetAssignedPersons(int taskId)
+        {
+            return _taskRepo.GetAssignedPersons(taskId);
+        }
     }
 }
