@@ -94,5 +94,29 @@ namespace Agile_Project.Models.Repositories
             cmd.Parameters.AddWithValue("@PersonId", personId);
             cmd.ExecuteNonQuery();
         }
+
+        // --- Login (thêm mới) ---
+        public Person? Login(string username, string password)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(
+                "SELECT * FROM Persons WHERE Username=@U AND Password=@P", conn);
+            cmd.Parameters.AddWithValue("@U", username);
+            cmd.Parameters.AddWithValue("@P", password);
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return new Person
+                {
+                    PersonId = Convert.ToInt32(reader["PersonId"]),
+                    Name = reader["Name"].ToString()!,
+                    Role = reader["Role"].ToString()!,
+                    Username = reader["Username"].ToString()!,
+                    ProfileRole = reader["ProfileRole"].ToString()!
+                };
+            }
+            return null;
+        }
     }
 }

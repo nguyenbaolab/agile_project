@@ -1,4 +1,5 @@
-﻿using Agile_Project.Models.Entities;
+﻿using Agile_Project.Models;
+using Agile_Project.Models.Entities;
 using Agile_Project.Models.Repositories;
 using System;
 using System.Collections.Generic;
@@ -62,6 +63,18 @@ namespace Agile_Project.Controllers
             if (string.IsNullOrWhiteSpace(name)) return false;
             _personRepo.Add(new Person { Name = name, Role = role });
             return true;
+        }
+
+        // Login
+        public (bool success, string message) Login(string username, string password)
+        {
+            var person = _personRepo.Login(username, password);
+            if (person == null) return (false, "Wrong username or password.");
+
+            CurrentSession.PersonId = person.PersonId;
+            CurrentSession.Username = person.Username;
+            CurrentSession.Role = person.ProfileRole;
+            return (true, $"Welcome {person.Name} ({person.ProfileRole})!");
         }
     }
 }

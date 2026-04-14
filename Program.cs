@@ -22,7 +22,7 @@ namespace Agile_Project
 
             DatabaseInitializer.Initialize();
 
-            bool useGUI = false; // doi thanh false de chay Console
+            bool useGUI = true; // doi thanh false de chay Console
 
             if (useGUI)
             {

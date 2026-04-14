@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Agile_Project.Controllers;
+using Agile_Project.Models;
 using Agile_Project.Models.Entities;
 
 namespace Agile_Project.Views.Forms
@@ -23,11 +24,13 @@ namespace Agile_Project.Views.Forms
 
             Text = $"Manage Persons — {project.Name}";
             Size = new Size(440, 420);
+            MinimumSize = new Size(380, 360);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
+            AutoScaleMode = AutoScaleMode.Font;
             Padding = new Padding(0);
 
             BuildUI();
@@ -37,13 +40,17 @@ namespace Agile_Project.Views.Forms
         private void BuildUI()
         {
             var tabs = new TabControl { Dock = DockStyle.Fill };
-            tabs.TabPages.Add(BuildAddTab());
+
+            // Tab "Add Person" — chỉ Admin
+            if (PermissionService.CanDo("ManagePerson"))
+                tabs.TabPages.Add(BuildAddTab());
+
             tabs.TabPages.Add(BuildProjectPersonsTab());
             tabs.TabPages.Add(BuildAllPersonsTab());
             Controls.Add(tabs);
         }
 
-        // ── Tab 1: Add Person ─────────────────────────────────────────
+        // ── Tab 1: Add Person (Admin only) ────────────────────────────
 
         private TabPage BuildAddTab()
         {
@@ -53,14 +60,14 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 5,   // lblName, txtName, lblRole, txtRole, btnAdd
+                RowCount = 5,
                 BackColor = Color.White
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // label Name
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));  // txtName
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // label Role
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));  // txtRole
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));  // btnAdd
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
 
             layout.Controls.Add(MakeLabel("Name *"), 0, 0);
 
@@ -141,20 +148,25 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Margin = new Padding(0)
             };
-            var btnRemove = new Button
-            {
-                Text = "Remove from project",
-                Width = 112,
-                Height = 30,
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(160, 45, 45),
-                Margin = new Padding(0, 0, 0, 6),
-                FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
-            };
-            btnRemove.Click += BtnRemoveFromProject_Click;
-            btnCol.Controls.Add(btnRemove);
-            layout.Controls.Add(btnCol, 1, 0);
 
+            // Remove from project — chỉ người có quyền AssignPerson (Admin/PO)
+            if (PermissionService.CanDo("AssignPerson"))
+            {
+                var btnRemove = new Button
+                {
+                    Text = "Remove from project",
+                    Width = 112,
+                    Height = 30,
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(160, 45, 45),
+                    Margin = new Padding(0, 0, 0, 6),
+                    FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
+                };
+                btnRemove.Click += BtnRemoveFromProject_Click;
+                btnCol.Controls.Add(btnRemove);
+            }
+
+            layout.Controls.Add(btnCol, 1, 0);
             tp.Controls.Add(layout);
             return tp;
         }
@@ -192,35 +204,42 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(0)
             };
 
-            var btnLink = new Button
+            // Link to project — Admin/PO
+            if (PermissionService.CanDo("AssignPerson"))
             {
-                Text = "Link to project",
-                Width = 112,
-                Height = 30,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(15, 110, 86),
-                ForeColor = Color.White,
-                Margin = new Padding(0, 0, 0, 6),
-                FlatAppearance = { BorderSize = 0 }
-            };
-            btnLink.Click += BtnLinkToProject_Click;
+                var btnLink = new Button
+                {
+                    Text = "Link to project",
+                    Width = 112,
+                    Height = 30,
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(15, 110, 86),
+                    ForeColor = Color.White,
+                    Margin = new Padding(0, 0, 0, 6),
+                    FlatAppearance = { BorderSize = 0 }
+                };
+                btnLink.Click += BtnLinkToProject_Click;
+                btnCol.Controls.Add(btnLink);
+            }
 
-            var btnDelete = new Button
+            // Delete person — Admin only
+            if (PermissionService.CanDo("ManagePerson"))
             {
-                Text = "Delete person",
-                Width = 112,
-                Height = 30,
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(160, 45, 45),
-                Margin = new Padding(0, 0, 0, 0),
-                FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
-            };
-            // Delete not in current controller API, left as placeholder
+                var btnDelete = new Button
+                {
+                    Text = "Delete person",
+                    Width = 112,
+                    Height = 30,
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(160, 45, 45),
+                    Margin = new Padding(0, 0, 0, 0),
+                    FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
+                };
+                // Delete not in current controller API, placeholder
+                btnCol.Controls.Add(btnDelete);
+            }
 
-            btnCol.Controls.Add(btnLink);
-            btnCol.Controls.Add(btnDelete);
             layout.Controls.Add(btnCol, 1, 0);
-
             tp.Controls.Add(layout);
             return tp;
         }

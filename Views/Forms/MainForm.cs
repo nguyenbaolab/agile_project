@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Agile_Project.Controllers;
+using Agile_Project.Models;
 using Agile_Project.Models.Entities;
 
 namespace Agile_Project.Views.Forms
@@ -40,9 +41,21 @@ namespace Agile_Project.Views.Forms
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.FromArgb(245, 245, 243);
             Font = new Font("Segoe UI", 9f);
+            AutoScaleMode = AutoScaleMode.Font; // responsive fix
+
+            // --- Login trước khi build UI ---
+            using var loginDlg = new LoginForm(_projectCtrl);
+            if (loginDlg.ShowDialog() != DialogResult.OK)
+            {
+                Load += (s, e) => Close();
+                return;
+            }
 
             BuildUI();
             LoadProjects();
+
+            // Resize → refresh để card width luôn đúng
+            Resize += (s, e) => { if (_selectedProject != null) RefreshBoard(); };
         }
 
         private void BuildUI()
@@ -66,7 +79,6 @@ namespace Agile_Project.Views.Forms
                     0, topbar.Height - 1, topbar.Width, topbar.Height - 1);
             };
 
-            // Dung FlowLayoutPanel de cac control tu xep hang ngang, khong bi chong len nhau
             var flow = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -116,10 +128,32 @@ namespace Agile_Project.Views.Forms
             btnReports = MakeTopBtn("Reports", Color.FromArgb(15, 110, 86));
             btnReports.Click += BtnReports_Click;
 
+            // --- Ẩn button theo role ---
+            btnNewProject.Visible = PermissionService.CanDo("ManageProject");
+            btnEditProject.Visible = PermissionService.CanDo("ManageProject");
+            btnDeleteProject.Visible = PermissionService.CanDo("ManageProject");
+            btnManagePersons.Visible = PermissionService.CanDo("AssignPerson");
+            // btnReports luôn hiện (ViewReport = true)
+
+            // Label hiển thị user đang login
+            var lblUser = new Label
+            {
+                Text = $"👤 {CurrentSession.Username} ({CurrentSession.Role})",
+                AutoSize = true,
+                ForeColor = Color.FromArgb(100, 100, 96),
+                Margin = new Padding(12, 14, 8, 0)
+            };
+
+            // Nút Logout
+            var btnLogout = MakeTopBtn("Logout", Color.FromArgb(160, 45, 45));
+            btnLogout.Margin = new Padding(0, 10, 8, 0);
+            btnLogout.Click += BtnLogout_Click;
+
             flow.Controls.AddRange(new Control[] {
                 lblProject, cmbProjects,
                 btnNewProject, btnEditProject, btnDeleteProject,
-                btnManagePersons, btnReports
+                btnManagePersons, btnReports,
+                lblUser, btnLogout
             });
 
             topbar.Controls.Add(flow);
@@ -196,11 +230,11 @@ namespace Agile_Project.Views.Forms
             var lblTitle = new Label
             {
                 Text = title,
-                Dock = DockStyle.Fill,              // tự co giãn theo header
+                Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = accentColor,
-                TextAlign = ContentAlignment.MiddleLeft,  // căn giữa dọc, không cần pixel
-                Padding = new Padding(14, 0, 0, 0)  // thay cho Location.X = 14
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(14, 0, 0, 0)
             };
             header.Controls.Add(lblTitle);
 
@@ -224,6 +258,14 @@ namespace Agile_Project.Views.Forms
             col.Controls.Add(scroll);
             col.Controls.Add(header);
             return col;
+        }
+
+        // ── Responsive card width ─────────────────────────────────────
+        // Tính width dựa theo kích thước cột thực tế thay vì hardcode 260
+        private int GetCardWidth()
+        {
+            int w = flpBacklog.ClientSize.Width - flpBacklog.Padding.Horizontal - 8;
+            return Math.Max(200, w);
         }
 
         // ── Data loading ──────────────────────────────────────────────
@@ -252,39 +294,43 @@ namespace Agile_Project.Views.Forms
             if (_selectedProject == null) return;
             ClearBoard();
 
+            int cardW = GetCardWidth();
+
             var stories = _storyCtrl.GetByProject(_selectedProject.ProjectId);
             foreach (var story in stories)
             {
                 switch (story.State)
                 {
                     case UserStoryState.ProjectBacklog:
-                        flpBacklog.Controls.Add(MakeBacklogCard(story));
+                        flpBacklog.Controls.Add(MakeBacklogCard(story, cardW));
                         break;
                     case UserStoryState.InSprint:
-                        flpSprint.Controls.Add(MakeSprintCard(story));
+                        flpSprint.Controls.Add(MakeSprintCard(story, cardW));
                         break;
                     case UserStoryState.Done:
-                        flpDone.Controls.Add(MakeDoneCard(story));
+                        flpDone.Controls.Add(MakeDoneCard(story, cardW));
                         break;
                 }
             }
 
-            // Add Story button at bottom of backlog
-            var btnAdd = new Button
+            // "+ Add User Story" button — chỉ hiện nếu có quyền
+            if (PermissionService.CanDo("ManageUserStory"))
             {
-                Text = "+ Add User Story",
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(100, 100, 96),
-                BackColor = Color.FromArgb(240, 239, 235),
-                Width = flpBacklog.Width - 20,
-                Height = 30,
-                Cursor = Cursors.Hand,
-                FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193), BorderSize = 1 }
-            };
-            btnAdd.Click += (s, e) => BtnAddStory_Click();
-            flpBacklog.Controls.Add(btnAdd);
+                var btnAdd = new Button
+                {
+                    Text = "+ Add User Story",
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(100, 100, 96),
+                    BackColor = Color.FromArgb(240, 239, 235),
+                    Width = cardW,
+                    Height = 30,
+                    Cursor = Cursors.Hand,
+                    FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193), BorderSize = 1 }
+                };
+                btnAdd.Click += (s, e) => BtnAddStory_Click();
+                flpBacklog.Controls.Add(btnAdd);
+            }
 
-            // Refresh FlowLayoutPanel sizes
             flpBacklog.Height = flpBacklog.GetPreferredSize(Size.Empty).Height;
             flpSprint.Height = flpSprint.GetPreferredSize(Size.Empty).Height;
             flpDone.Height = flpDone.GetPreferredSize(Size.Empty).Height;
@@ -299,9 +345,9 @@ namespace Agile_Project.Views.Forms
 
         // ── Card builders ─────────────────────────────────────────────
 
-        private Control MakeBacklogCard(UserStory story)
+        private Control MakeBacklogCard(UserStory story, int cardW)
         {
-            var card = MakeCardBase();
+            var card = MakeCardBase(cardW);
             int y = 10;
 
             var lblTitle = new Label
@@ -310,7 +356,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 40, 38),
                 Location = new Point(10, y),
-                Width = card.Width - 20,
+                Width = cardW - 20,
                 AutoSize = false,
                 Height = 20
             };
@@ -323,42 +369,54 @@ namespace Agile_Project.Views.Forms
                 Text = $"Priority: {story.Priority}  ·  {tasks.Count} tasks",
                 ForeColor = Color.FromArgb(130, 128, 122),
                 Location = new Point(10, y),
-                Width = card.Width - 20,
+                Width = cardW - 20,
                 Height = 18,
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
             y += 24;
 
-            var btnMove = MakeCardBtn("→ Move to Sprint", Color.FromArgb(83, 74, 183));
-            btnMove.Location = new Point(10, y);
-            btnMove.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
-            card.Controls.Add(btnMove);
+            // Buttons: chỉ hiện theo quyền
+            int btnX = 10;
+            if (PermissionService.CanDo("ManageUserStory"))
+            {
+                var btnMove = MakeCardBtn("→ Move to Sprint", Color.FromArgb(83, 74, 183));
+                btnMove.Location = new Point(btnX, y);
+                btnMove.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
+                card.Controls.Add(btnMove);
+                btnX = btnMove.Right + 4;
+            }
 
-            var btnAddTask = MakeCardBtn("+ Task", Color.FromArgb(60, 60, 58));
-            btnAddTask.Location = new Point(btnMove.Right + 4, y);
-            btnAddTask.Click += (s, e) => AddTask(story);
-            card.Controls.Add(btnAddTask);
+            if (PermissionService.CanDo("AddTask"))
+            {
+                var btnAddTask = MakeCardBtn("+ Task", Color.FromArgb(60, 60, 58));
+                btnAddTask.Location = new Point(btnX, y);
+                btnAddTask.Click += (s, e) => AddTask(story);
+                card.Controls.Add(btnAddTask);
+            }
             y += 28;
 
-            var btnEdit = MakeCardBtn("Edit", Color.FromArgb(60, 60, 58));
-            btnEdit.Location = new Point(10, y);
-            btnEdit.Click += (s, e) => EditStory(story);
-            card.Controls.Add(btnEdit);
+            if (PermissionService.CanDo("ManageUserStory"))
+            {
+                var btnEdit = MakeCardBtn("Edit", Color.FromArgb(60, 60, 58));
+                btnEdit.Location = new Point(10, y);
+                btnEdit.Click += (s, e) => EditStory(story);
+                card.Controls.Add(btnEdit);
 
-            var btnDel = MakeCardBtn("Delete", Color.FromArgb(160, 45, 45));
-            btnDel.Location = new Point(btnEdit.Right + 4, y);
-            btnDel.Click += (s, e) => DeleteStory(story);
-            card.Controls.Add(btnDel);
-            y += 30;
+                var btnDel = MakeCardBtn("Delete", Color.FromArgb(160, 45, 45));
+                btnDel.Location = new Point(btnEdit.Right + 4, y);
+                btnDel.Click += (s, e) => DeleteStory(story);
+                card.Controls.Add(btnDel);
+                y += 30;
+            }
 
             card.Height = y + 6;
             return card;
         }
 
-        private Control MakeSprintCard(UserStory story)
+        private Control MakeSprintCard(UserStory story, int cardW)
         {
-            var card = MakeCardBase();
+            var card = MakeCardBase(cardW);
             int y = 10;
 
             var lblTitle = new Label
@@ -367,7 +425,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 40, 38),
                 Location = new Point(10, y),
-                Width = card.Width - 20,
+                Width = cardW - 20,
                 AutoSize = false,
                 Height = 20
             };
@@ -381,7 +439,7 @@ namespace Agile_Project.Views.Forms
                 var sep = new Panel
                 {
                     Location = new Point(10, y),
-                    Width = card.Width - 20,
+                    Width = cardW - 20,
                     Height = 1,
                     BackColor = Color.FromArgb(220, 218, 213)
                 };
@@ -391,10 +449,8 @@ namespace Agile_Project.Views.Forms
                 foreach (var task in tasks)
                 {
                     var assignedPersons = _taskCtrl.GetById(task.TaskId) != null
-                        ? GetAssignedPersonNames(task.TaskId)
-                        : "";
-
-                    var taskRow = MakeTaskRow(task, story, assignedPersons, card.Width, ref y);
+                        ? GetAssignedPersonNames(task.TaskId) : "";
+                    var taskRow = MakeTaskRow(task, story, assignedPersons, cardW, ref y);
                     card.Controls.Add(taskRow);
                     y += taskRow.Height + 3;
                 }
@@ -402,7 +458,7 @@ namespace Agile_Project.Views.Forms
                 var sep2 = new Panel
                 {
                     Location = new Point(10, y),
-                    Width = card.Width - 20,
+                    Width = cardW - 20,
                     Height = 1,
                     BackColor = Color.FromArgb(220, 218, 213)
                 };
@@ -410,24 +466,34 @@ namespace Agile_Project.Views.Forms
                 y += 8;
             }
 
-            var btnDone = MakeCardBtn("→ Mark Done", Color.FromArgb(15, 110, 86));
-            btnDone.Location = new Point(10, y);
-            btnDone.Click += (s, e) => MoveStory(story, UserStoryState.Done);
-            card.Controls.Add(btnDone);
+            // Buttons theo quyền
+            int btnX = 10;
+            if (PermissionService.CanDo("ManageUserStory"))
+            {
+                var btnDone = MakeCardBtn("→ Mark Done", Color.FromArgb(15, 110, 86));
+                btnDone.Location = new Point(btnX, y);
+                btnDone.Click += (s, e) => MoveStory(story, UserStoryState.Done);
+                card.Controls.Add(btnDone);
 
-            var btnBack = MakeCardBtn("← Back", Color.FromArgb(100, 100, 96));
-            btnBack.Location = new Point(btnDone.Right + 4, y);
-            btnBack.Click += (s, e) => MoveStory(story, UserStoryState.ProjectBacklog);
-            card.Controls.Add(btnBack);
-            y += 28;
+                var btnBack = MakeCardBtn("← Back", Color.FromArgb(100, 100, 96));
+                btnBack.Location = new Point(btnDone.Right + 4, y);
+                btnBack.Click += (s, e) => MoveStory(story, UserStoryState.ProjectBacklog);
+                card.Controls.Add(btnBack);
+                y += 28;
+                btnX = 10;
+            }
 
-            var btnAddTask = MakeCardBtn("+ Task", Color.FromArgb(60, 60, 58));
-            btnAddTask.Location = new Point(10, y);
-            btnAddTask.Click += (s, e) => AddTask(story);
-            card.Controls.Add(btnAddTask);
+            if (PermissionService.CanDo("AddTask"))
+            {
+                var btnAddTask = MakeCardBtn("+ Task", Color.FromArgb(60, 60, 58));
+                btnAddTask.Location = new Point(btnX, y);
+                btnAddTask.Click += (s, e) => AddTask(story);
+                card.Controls.Add(btnAddTask);
+                btnX = btnAddTask.Right + 4;
+            }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
-            btnReport.Location = new Point(btnAddTask.Right + 4, y);
+            btnReport.Location = new Point(btnX, y);
             btnReport.Click += (s, e) => ShowStoryReport(story);
             card.Controls.Add(btnReport);
             y += 30;
@@ -436,9 +502,9 @@ namespace Agile_Project.Views.Forms
             return card;
         }
 
-        private Control MakeDoneCard(UserStory story)
+        private Control MakeDoneCard(UserStory story, int cardW)
         {
-            var card = MakeCardBase();
+            var card = MakeCardBase(cardW);
             card.BackColor = Color.FromArgb(248, 250, 246);
             int y = 10;
 
@@ -448,7 +514,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(100, 130, 80),
                 Location = new Point(10, y),
-                Width = card.Width - 20,
+                Width = cardW - 20,
                 AutoSize = false,
                 Height = 20
             };
@@ -462,20 +528,25 @@ namespace Agile_Project.Views.Forms
                 Text = $"Priority: {story.Priority}  ·  {doneTasks}/{tasks.Count} tasks done",
                 ForeColor = Color.FromArgb(130, 155, 110),
                 Location = new Point(10, y),
-                Width = card.Width - 20,
+                Width = cardW - 20,
                 Height = 18,
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
             y += 24;
 
-            var btnBack = MakeCardBtn("← Back to Sprint", Color.FromArgb(100, 100, 96));
-            btnBack.Location = new Point(10, y);
-            btnBack.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
-            card.Controls.Add(btnBack);
+            int btnX = 10;
+            if (PermissionService.CanDo("ManageUserStory"))
+            {
+                var btnBack = MakeCardBtn("← Back to Sprint", Color.FromArgb(100, 100, 96));
+                btnBack.Location = new Point(btnX, y);
+                btnBack.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
+                card.Controls.Add(btnBack);
+                btnX = btnBack.Right + 4;
+            }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
-            btnReport.Location = new Point(btnBack.Right + 4, y);
+            btnReport.Location = new Point(btnX, y);
             btnReport.Click += (s, e) => ShowStoryReport(story);
             card.Controls.Add(btnReport);
             y += 30;
@@ -484,11 +555,12 @@ namespace Agile_Project.Views.Forms
             return card;
         }
 
-        private Panel MakeCardBase()
+        // Width giờ là tham số thay vì hardcode 260
+        private Panel MakeCardBase(int width)
         {
             return new Panel
             {
-                Width = 260,
+                Width = width,
                 Height = 120,
                 BackColor = Color.White,
                 Margin = new Padding(0, 0, 0, 8),
@@ -517,11 +589,16 @@ namespace Agile_Project.Views.Forms
             {
                 Size = new Size(10, 10),
                 Location = new Point(0, 6),
-                BackColor = dotColor,
-                Cursor = Cursors.Hand
+                BackColor = dotColor
             };
             MakeRound(dot);
-            dot.Click += (s, e) => CycleTaskState(task, story);
+
+            // Chỉ cho click cycle nếu có quyền ChangeTaskState
+            if (PermissionService.CanDo("ChangeTaskState"))
+            {
+                dot.Cursor = Cursors.Hand;
+                dot.Click += (s, e) => CycleTaskState(task, story);
+            }
             row.Controls.Add(dot);
 
             var lblTask = new Label
@@ -590,14 +667,7 @@ namespace Agile_Project.Views.Forms
             };
         }
 
-        private string GetAssignedPersonNames(int taskId)
-        {
-            // TaskRepository.GetAssignedPersons via TaskController
-            // We access through reflection-free approach: get from repo directly
-            // For now return empty; TaskController.GetById doesn't expose persons
-            // Will be shown in TaskDetailDialog
-            return "";
-        }
+        private string GetAssignedPersonNames(int taskId) => "";
 
         // ── Actions ───────────────────────────────────────────────────
 
@@ -701,6 +771,27 @@ namespace Agile_Project.Views.Forms
             if (_selectedProject == null) return;
             var dlg = new ReportsForm(_selectedProject, null, _storyCtrl, _taskCtrl, _projectCtrl);
             dlg.ShowDialog();
+        }
+
+        private void BtnLogout_Click(object? s, EventArgs e)
+        {
+            // Clear session
+            CurrentSession.PersonId = 0;
+            CurrentSession.Username = "";
+            CurrentSession.Role = "";
+
+            // Show login — nếu cancel thì thoát app, nếu OK thì rebuild UI tại chỗ
+            using var loginDlg = new LoginForm(_projectCtrl);
+            if (loginDlg.ShowDialog() != DialogResult.OK)
+            {
+                Application.Exit();
+                return;
+            }
+
+            // Rebuild UI ngay trên form này, không tạo MainForm mới
+            Controls.Clear();
+            BuildUI();
+            LoadProjects();
         }
     }
 }

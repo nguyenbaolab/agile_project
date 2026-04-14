@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Agile_Project.Controllers;
+using Agile_Project.Models;
 using Agile_Project.Models.Entities;
 
 namespace Agile_Project.Views.Forms
@@ -41,11 +42,13 @@ namespace Agile_Project.Views.Forms
 
             Text = existing == null ? "Add Task" : "Task Detail";
             Size = new Size(500, 660);
+            MinimumSize = new Size(420, 500);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
+            AutoScaleMode = AutoScaleMode.Font;
             Padding = new Padding(16, 12, 16, 12);
 
             BuildUI();
@@ -55,7 +58,6 @@ namespace Agile_Project.Views.Forms
 
         private void BuildUI()
         {
-            // Outer scroll container
             var scroll = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -63,7 +65,6 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White
             };
 
-            // Main vertical layout
             var layout = new TableLayoutPanel
             {
                 AutoSize = true,
@@ -85,7 +86,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtTitle);
 
-            // ── Priority + Difficulty (side by side) ──────────────────
+            // ── Priority + Difficulty ─────────────────────────────────
             layout.Controls.Add(MakeLabel("Priority  /  Difficulty"));
             var rowPriDiff = new FlowLayoutPanel
             {
@@ -112,7 +113,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtLabels);
 
-            // ── Planned time + Actual time (side by side) ─────────────
+            // ── Planned time + Actual time ────────────────────────────
             layout.Controls.Add(MakeLabel("Planned time (h)  /  Actual time (h)"));
             var rowTimes = new FlowLayoutPanel
             {
@@ -159,8 +160,8 @@ namespace Agile_Project.Views.Forms
 
             layout.Controls.Add(rowDates);
 
-            // ── State (only when InSprint) ────────────────────────────
-            if (_story.State == UserStoryState.InSprint)
+            // ── State — chỉ hiện nếu InSprint VÀ có quyền ChangeTaskState
+            if (_story.State == UserStoryState.InSprint && PermissionService.CanDo("ChangeTaskState"))
             {
                 layout.Controls.Add(MakeLabel("State"));
                 cmbState = new ComboBox
@@ -185,79 +186,86 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(sep);
 
-            // ── Assigned persons ──────────────────────────────────────
-            layout.Controls.Add(MakeLabel("Assigned persons"));
-
-            var rowPersons = new TableLayoutPanel
+            // ── Assigned persons — chỉ hiện nếu có quyền AssignPerson ─
+            if (PermissionService.CanDo("AssignPerson"))
             {
-                AutoSize = true,
-                ColumnCount = 2,
-                BackColor = Color.White,
-                Margin = new Padding(0, 0, 0, 10)
-            };
-            rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+                layout.Controls.Add(MakeLabel("Assigned persons"));
 
-            lstPersons = new ListBox
-            {
-                Dock = DockStyle.Fill,
-                Height = 80,
-                BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 0, 8, 0)
-            };
-            rowPersons.Controls.Add(lstPersons, 0, 0);
+                var rowPersons = new TableLayoutPanel
+                {
+                    AutoSize = true,
+                    ColumnCount = 2,
+                    BackColor = Color.White,
+                    Margin = new Padding(0, 0, 0, 10)
+                };
+                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
 
-            var btnRemovePerson = new Button
-            {
-                Text = "Remove",
-                Dock = DockStyle.Top,
-                Height = 28,
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.FromArgb(160, 45, 45),
-                Margin = new Padding(0, 0, 0, 0),
-                FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
-            };
-            btnRemovePerson.Click += BtnRemovePerson_Click;
-            rowPersons.Controls.Add(btnRemovePerson, 1, 0);
+                lstPersons = new ListBox
+                {
+                    Dock = DockStyle.Fill,
+                    Height = 80,
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Margin = new Padding(0, 0, 6, 0)
+                };
+                rowPersons.Controls.Add(lstPersons, 0, 0);
 
-            layout.Controls.Add(rowPersons);
+                var btnCol = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Top,
+                    FlowDirection = FlowDirection.TopDown,
+                    AutoSize = true,
+                    BackColor = Color.White
+                };
+                var btnRemovePerson = new Button
+                {
+                    Text = "Remove",
+                    Dock = DockStyle.Fill,
+                    Height = 28,
+                    FlatStyle = FlatStyle.Flat,
+                    ForeColor = Color.FromArgb(160, 45, 45),
+                    Margin = new Padding(0, 0, 0, 4),
+                    FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
+                };
+                btnRemovePerson.Click += BtnRemovePerson_Click;
+                btnCol.Controls.Add(btnRemovePerson);
+                rowPersons.Controls.Add(btnCol, 1, 0);
+                layout.Controls.Add(rowPersons);
 
-            // ── Assign person ─────────────────────────────────────────
-            layout.Controls.Add(MakeLabel("Assign person:"));
+                // Assign row
+                var rowAssign = new TableLayoutPanel
+                {
+                    AutoSize = true,
+                    ColumnCount = 2,
+                    BackColor = Color.White,
+                    Margin = new Padding(0, 0, 0, 10)
+                };
+                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
 
-            var rowAssign = new TableLayoutPanel
-            {
-                AutoSize = true,
-                ColumnCount = 2,
-                BackColor = Color.White,
-                Margin = new Padding(0, 0, 0, 12)
-            };
-            rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+                cmbAssign = new ComboBox
+                {
+                    Dock = DockStyle.Fill,
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    FlatStyle = FlatStyle.Flat,
+                    Margin = new Padding(0, 0, 6, 0)
+                };
+                rowAssign.Controls.Add(cmbAssign, 0, 0);
 
-            cmbAssign = new ComboBox
-            {
-                Dock = DockStyle.Fill,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                FlatStyle = FlatStyle.Flat,
-                Margin = new Padding(0, 0, 8, 0)
-            };
-            rowAssign.Controls.Add(cmbAssign, 0, 0);
-
-            var btnAssign = new Button
-            {
-                Text = "Assign",
-                Dock = DockStyle.Fill,
-                Height = 28,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(15, 110, 86),
-                ForeColor = Color.White,
-                FlatAppearance = { BorderSize = 0 }
-            };
-            btnAssign.Click += BtnAssign_Click;
-            rowAssign.Controls.Add(btnAssign, 1, 0);
-
-            layout.Controls.Add(rowAssign);
+                var btnAssign = new Button
+                {
+                    Text = "Assign",
+                    Dock = DockStyle.Fill,
+                    Height = 28,
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(83, 74, 183),
+                    ForeColor = Color.White,
+                    FlatAppearance = { BorderSize = 0 }
+                };
+                btnAssign.Click += BtnAssign_Click;
+                rowAssign.Controls.Add(btnAssign, 1, 0);
+                layout.Controls.Add(rowAssign);
+            }
 
             // ── Save / Cancel ─────────────────────────────────────────
             var btnPanel = new FlowLayoutPanel
@@ -412,41 +420,32 @@ namespace Agile_Project.Views.Forms
 
         // ── Helpers ───────────────────────────────────────────────────
 
-        private NumericUpDown MakeNum(int min, int max)
+        private NumericUpDown MakeNum(int min, int max) => new NumericUpDown
         {
-            return new NumericUpDown
-            {
-                Width = 90,
-                Minimum = min,
-                Maximum = max,
-                BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0)
-            };
-        }
+            Width = 90,
+            Minimum = min,
+            Maximum = max,
+            BorderStyle = BorderStyle.FixedSingle,
+            Margin = new Padding(0)
+        };
 
-        private NumericUpDown MakeDecimalNum()
+        private NumericUpDown MakeDecimalNum() => new NumericUpDown
         {
-            return new NumericUpDown
-            {
-                Width = 120,
-                Minimum = 0,
-                Maximum = 9999,
-                DecimalPlaces = 1,
-                BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0)
-            };
-        }
+            Width = 120,
+            Minimum = 0,
+            Maximum = 9999,
+            DecimalPlaces = 1,
+            BorderStyle = BorderStyle.FixedSingle,
+            Margin = new Padding(0)
+        };
 
-        private DateTimePicker MakeDtp()
+        private DateTimePicker MakeDtp() => new DateTimePicker
         {
-            return new DateTimePicker
-            {
-                Dock = DockStyle.Fill,
-                Enabled = false,
-                Format = DateTimePickerFormat.Short,
-                Margin = new Padding(0, 2, 0, 2)
-            };
-        }
+            Dock = DockStyle.Fill,
+            Enabled = false,
+            Format = DateTimePickerFormat.Short,
+            Margin = new Padding(0, 2, 0, 2)
+        };
 
         private Label MakeLabel(string text) => new Label
         {

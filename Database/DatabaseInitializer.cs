@@ -14,6 +14,8 @@ namespace Agile_Project.Database
         {
             CreateDatabaseIfNotExists();
             CreateTables();
+            AddAuthColumns();     
+            SeedDefaultAccounts(); 
         }
 
         private static void CreateDatabaseIfNotExists()
@@ -118,6 +120,62 @@ namespace Agile_Project.Database
                 if (string.IsNullOrEmpty(trimmed)) continue;
                 using var cmd = new MySqlCommand(trimmed, conn);
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        // Them cot auth vao Persons (dùng IF NOT EXISTS safe pattern)
+        private static void AddAuthColumns()
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            var alterStatements = new[]
+            {
+                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Username VARCHAR(100) NULL",
+                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Password VARCHAR(100) NULL",
+                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS ProfileRole VARCHAR(50) DEFAULT 'Developer'"
+            };
+
+            foreach (var sql in alterStatements)
+            {
+                try
+                {
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                }
+                catch { /* da co thi bo qua */ }
+            }
+        }
+
+        // Them 3 tai khoan mac dinh neu chua co
+        private static void SeedDefaultAccounts()
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            var seeds = new[]
+            {
+                ("Admin User",    "Admin", "admin", "admin123", "Admin"),
+                ("Product Owner", "PO",    "po",    "po123",    "ProductOwner"),
+                ("Developer",     "Dev",   "dev",   "dev123",   "Developer")
+            };
+
+            foreach (var (name, role, username, password, profileRole) in seeds)
+            {
+                var check = new MySqlCommand(
+                    "SELECT COUNT(*) FROM Persons WHERE Username=@U", conn);
+                check.Parameters.AddWithValue("@U", username);
+                var count = Convert.ToInt32(check.ExecuteScalar());
+                if (count > 0) continue;
+
+                var insert = new MySqlCommand(
+                    "INSERT INTO Persons (Name, Role, Username, Password, ProfileRole) VALUES (@N,@R,@U,@P,@PR)", conn);
+                insert.Parameters.AddWithValue("@N", name);
+                insert.Parameters.AddWithValue("@R", role);
+                insert.Parameters.AddWithValue("@U", username);
+                insert.Parameters.AddWithValue("@P", password);
+                insert.Parameters.AddWithValue("@PR", profileRole);
+                insert.ExecuteNonQuery();
             }
         }
     }

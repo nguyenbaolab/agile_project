@@ -1,4 +1,5 @@
 ﻿using Agile_Project.Controllers;
+using Agile_Project.Models;
 
 namespace Agile_Project.Views.Console
 {
@@ -10,12 +11,20 @@ namespace Agile_Project.Views.Console
 
         public void Run()
         {
+            // Login truoc khi vao menu 
+            if (!new LoginUI(_projectController).Run()) return;
+
             while (true)
             {
                 System.Console.Clear();
                 System.Console.WriteLine("=== AGILE PROJECT MANAGER ===");
+                System.Console.WriteLine($"Logged in as: {CurrentSession.Username} ({CurrentSession.Role})\n");
+
                 System.Console.WriteLine("[1] Manage Projects");
-                System.Console.WriteLine("[2] Manage User Stories");
+
+                if (PermissionService.CanDo("ManageUserStory"))
+                    System.Console.WriteLine("[2] Manage User Stories");
+
                 System.Console.WriteLine("[3] Manage Tasks");
                 System.Console.WriteLine("[0] Exit");
                 System.Console.Write("Choose: ");
@@ -26,7 +35,13 @@ namespace Agile_Project.Views.Console
                         new ProjectMenuUI(_projectController).Run();
                         break;
                     case "2":
-                        new UserStoryMenuUI(_projectController, _userStoryController).Run();
+                        if (PermissionService.CanDo("ManageUserStory"))
+                            new UserStoryMenuUI(_projectController, _userStoryController).Run();
+                        else
+                        {
+                            System.Console.WriteLine("Permission denied.");
+                            Pause();
+                        }
                         break;
                     case "3":
                         new TaskMenuUI(_projectController, _userStoryController, _taskController).Run();
