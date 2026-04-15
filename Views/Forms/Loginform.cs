@@ -24,7 +24,8 @@ namespace Agile_Project.Views.Forms
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScaleDimensions = new SizeF(96F, 96F);
 
             BuildUI();
         }
@@ -39,20 +40,23 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Padding = new Padding(24, 20, 24, 16)
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36)); // title
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // title
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // lbl username
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36)); // txt username
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // txt username
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // lbl password
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36)); // txt password
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // txt password
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // btn + error
 
             var lblTitle = new Label
             {
                 Text = "Agile Project Manager",
                 Dock = DockStyle.Fill,
+                AutoSize = false,
+                Height = 36,
                 Font = new Font("Segoe UI", 11f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(83, 74, 183),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 0, 0, 8)
             };
             layout.Controls.Add(lblTitle, 0, 0);
 
@@ -62,7 +66,7 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 0, 0, 6)
+                Margin = new Padding(0, 2, 0, 8)
             };
             layout.Controls.Add(txtUsername, 0, 2);
 
@@ -73,7 +77,7 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
                 PasswordChar = '●',
-                Margin = new Padding(0, 0, 0, 6)
+                Margin = new Padding(0, 2, 0, 8)
             };
             layout.Controls.Add(txtPassword, 0, 4);
 
@@ -102,14 +106,14 @@ namespace Agile_Project.Views.Forms
             var btnLogin = new Button
             {
                 Text = "Login",
-                Width = 90,
-                Height = 32,
+                AutoSize = true,                     
+                MinimumSize = new Size(90, 32),         
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(83, 74, 183),
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand,
                 FlatAppearance = { BorderSize = 0 },
-                Margin = new Padding(0, 4, 0, 0)
+                Margin = new Padding(8, 4, 0, 0)
             };
             btnLogin.Click += BtnLogin_Click;
             bottomPanel.Controls.Add(btnLogin, 1, 0);
