@@ -23,7 +23,7 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            Size = new Size(440, 420);
+            Size = new Size(600, 520);
             MinimumSize = new Size(380, 360);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -50,7 +50,7 @@ namespace Agile_Project.Views.Forms
             Controls.Add(tabs);
         }
 
-        // ── Tab 1: Add Person (Admin only) ────────────────────────────
+        // Tab 1: Add Person (Admin only)
 
         private TabPage BuildAddTab()
         {
@@ -116,7 +116,7 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Tab 2: In This Project ────────────────────────────────────
+        // Tab 2: In This Project
 
         private TabPage BuildProjectPersonsTab()
         {
@@ -156,7 +156,7 @@ namespace Agile_Project.Views.Forms
                 {
                     Text = "Remove from project",
                     Width = 112,
-                    Height = 30,
+                    Height = 105,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 6),
@@ -171,7 +171,7 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Tab 3: All Persons ────────────────────────────────────────
+        // Tab 3: All Persons
 
         private TabPage BuildAllPersonsTab()
         {
@@ -211,7 +211,7 @@ namespace Agile_Project.Views.Forms
                 {
                     Text = "Link to project",
                     Width = 112,
-                    Height = 30,
+                    Height = 80,
                     FlatStyle = FlatStyle.Flat,
                     BackColor = Color.FromArgb(15, 110, 86),
                     ForeColor = Color.White,
@@ -229,7 +229,7 @@ namespace Agile_Project.Views.Forms
                 {
                     Text = "Delete person",
                     Width = 112,
-                    Height = 30,
+                    Height = 80,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 0),
