@@ -17,8 +17,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = "Login — Agile Project Manager";
-            Size = new Size(300, 240);
-            MinimumSize = new Size(280, 240);
+            Size = new Size(260, 240);
+            MinimumSize = new Size(260, 240);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;

@@ -41,7 +41,7 @@ namespace Agile_Project.Views.Forms
             _taskCtrl = taskCtrl;
 
             Text = existing == null ? "Add Task" : "Task Detail";
-            Size = new Size(500, 660);
+            Size = new Size(700, 900);
             MinimumSize = new Size(420, 500);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -76,7 +76,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-            // ── Title ─────────────────────────────────────────────────
+            // Title
             layout.Controls.Add(MakeLabel("Title *"));
             txtTitle = new TextBox
             {
@@ -86,7 +86,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtTitle);
 
-            // ── Priority + Difficulty ─────────────────────────────────
+            // Priority + Difficulty
             layout.Controls.Add(MakeLabel("Priority  /  Difficulty"));
             var rowPriDiff = new FlowLayoutPanel
             {
@@ -97,13 +97,13 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(0, 0, 0, 10)
             };
             numPriority = MakeNum(0, 100);
-            numPriority.Margin = new Padding(0, 0, 12, 0);
+            numPriority.Margin = new Padding(0, 0, 50, 0);
             numDifficulty = MakeNum(0, 10);
             rowPriDiff.Controls.Add(numPriority);
             rowPriDiff.Controls.Add(numDifficulty);
             layout.Controls.Add(rowPriDiff);
 
-            // ── Category Labels ───────────────────────────────────────
+            // Category Labels
             layout.Controls.Add(MakeLabel("Category labels (comma separated)"));
             txtLabels = new TextBox
             {
@@ -113,7 +113,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtLabels);
 
-            // ── Planned time + Actual time ────────────────────────────
+            // Planned time + Actual time
             layout.Controls.Add(MakeLabel("Planned time (h)  /  Actual time (h)"));
             var rowTimes = new FlowLayoutPanel
             {
@@ -124,13 +124,13 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(0, 0, 0, 10)
             };
             numPlannedTime = MakeDecimalNum();
-            numPlannedTime.Margin = new Padding(0, 0, 12, 0);
+            numPlannedTime.Margin = new Padding(0, 0, 50, 0);
             numActualTime = MakeDecimalNum();
             rowTimes.Controls.Add(numPlannedTime);
             rowTimes.Controls.Add(numActualTime);
             layout.Controls.Add(rowTimes);
 
-            // ── Dates ─────────────────────────────────────────────────
+            // Dates
             layout.Controls.Add(MakeLabel("Dates (check to enable)"));
             var rowDates = new TableLayoutPanel
             {
@@ -139,28 +139,62 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Margin = new Padding(0, 0, 0, 10)
             };
-            rowDates.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
-            rowDates.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            rowDates.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250));
+            rowDates.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 150));
 
-            chkPlannedStart = new CheckBox { Text = "Planned start", AutoSize = true, Margin = new Padding(0, 4, 8, 4) };
-            dtpPlannedStart = MakeDtp(); chkPlannedStart.CheckedChanged += (s, e) => dtpPlannedStart.Enabled = chkPlannedStart.Checked;
-            rowDates.Controls.Add(chkPlannedStart); rowDates.Controls.Add(dtpPlannedStart);
+            int chkWidth = 110;
 
-            chkPlannedEnd = new CheckBox { Text = "Planned end", AutoSize = true, Margin = new Padding(0, 4, 8, 4) };
-            dtpPlannedEnd = MakeDtp(); chkPlannedEnd.CheckedChanged += (s, e) => dtpPlannedEnd.Enabled = chkPlannedEnd.Checked;
-            rowDates.Controls.Add(chkPlannedEnd); rowDates.Controls.Add(dtpPlannedEnd);
+            chkPlannedStart = new CheckBox
+            {
+                Text = "Planned start",
+                AutoSize = true,
+                Width = chkWidth,
+                Margin = new Padding(0, 4, 8, 4)
+            };
+            dtpPlannedStart = MakeDtp();
+            chkPlannedStart.CheckedChanged += (s, e) => dtpPlannedStart.Enabled = chkPlannedStart.Checked;
+            rowDates.Controls.Add(chkPlannedStart);
+            rowDates.Controls.Add(dtpPlannedStart);
 
-            chkActualStart = new CheckBox { Text = "Actual start", AutoSize = true, Margin = new Padding(0, 4, 8, 4) };
-            dtpActualStart = MakeDtp(); chkActualStart.CheckedChanged += (s, e) => dtpActualStart.Enabled = chkActualStart.Checked;
-            rowDates.Controls.Add(chkActualStart); rowDates.Controls.Add(dtpActualStart);
+            chkPlannedEnd = new CheckBox
+            {
+                Text = "Planned end",
+                AutoSize = true,
+                Width = chkWidth,
+                Margin = new Padding(0, 4, 8, 4)
+            };
+            dtpPlannedEnd = MakeDtp();
+            chkPlannedEnd.CheckedChanged += (s, e) => dtpPlannedEnd.Enabled = chkPlannedEnd.Checked;
+            rowDates.Controls.Add(chkPlannedEnd);
+            rowDates.Controls.Add(dtpPlannedEnd);
 
-            chkActualEnd = new CheckBox { Text = "Actual end", AutoSize = true, Margin = new Padding(0, 4, 8, 4) };
-            dtpActualEnd = MakeDtp(); chkActualEnd.CheckedChanged += (s, e) => dtpActualEnd.Enabled = chkActualEnd.Checked;
-            rowDates.Controls.Add(chkActualEnd); rowDates.Controls.Add(dtpActualEnd);
+            chkActualStart = new CheckBox
+            {
+                Text = "Actual start",
+                AutoSize = true,
+                Width = chkWidth,
+                Margin = new Padding(0, 4, 8, 4)
+            };
+            dtpActualStart = MakeDtp();
+            chkActualStart.CheckedChanged += (s, e) => dtpActualStart.Enabled = chkActualStart.Checked;
+            rowDates.Controls.Add(chkActualStart);
+            rowDates.Controls.Add(dtpActualStart);
+
+            chkActualEnd = new CheckBox
+            {
+                Text = "Actual end",
+                AutoSize = true,
+                Width = chkWidth,
+                Margin = new Padding(0, 4, 8, 4)
+            };
+            dtpActualEnd = MakeDtp();
+            chkActualEnd.CheckedChanged += (s, e) => dtpActualEnd.Enabled = chkActualEnd.Checked;
+            rowDates.Controls.Add(chkActualEnd);
+            rowDates.Controls.Add(dtpActualEnd);
 
             layout.Controls.Add(rowDates);
 
-            // ── State — chỉ hiện nếu InSprint VÀ có quyền ChangeTaskState
+            // State — chỉ hiện nếu InSprint VÀ có quyền ChangeTaskState
             if (_story.State == UserStoryState.InSprint && PermissionService.CanDo("ChangeTaskState"))
             {
                 layout.Controls.Add(MakeLabel("State"));
@@ -176,7 +210,7 @@ namespace Agile_Project.Views.Forms
                 layout.Controls.Add(cmbState);
             }
 
-            // ── Separator ─────────────────────────────────────────────
+            // Separator
             var sep = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -186,7 +220,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(sep);
 
-            // ── Assigned persons — chỉ hiện nếu có quyền AssignPerson ─
+            // Assigned persons — chỉ hiện nếu có quyền AssignPerson
             if (PermissionService.CanDo("AssignPerson"))
             {
                 layout.Controls.Add(MakeLabel("Assigned persons"));
@@ -196,15 +230,16 @@ namespace Agile_Project.Views.Forms
                     AutoSize = true,
                     ColumnCount = 2,
                     BackColor = Color.White,
-                    Margin = new Padding(0, 0, 0, 10)
+                    Margin = new Padding(0, 0, 0, 10),
+                    Dock = DockStyle.Fill
                 };
                 rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120)); 
 
                 lstPersons = new ListBox
                 {
                     Dock = DockStyle.Fill,
-                    Height = 80,
+                    Height = 100,
                     BorderStyle = BorderStyle.FixedSingle,
                     Margin = new Padding(0, 0, 6, 0)
                 };
@@ -212,7 +247,7 @@ namespace Agile_Project.Views.Forms
 
                 var btnCol = new FlowLayoutPanel
                 {
-                    Dock = DockStyle.Top,
+                    Dock = DockStyle.Fill,
                     FlowDirection = FlowDirection.TopDown,
                     AutoSize = true,
                     BackColor = Color.White
@@ -220,8 +255,8 @@ namespace Agile_Project.Views.Forms
                 var btnRemovePerson = new Button
                 {
                     Text = "Remove",
-                    Dock = DockStyle.Fill,
-                    Height = 28,
+                    Width = 110,
+                    Height = 45,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 4),
@@ -238,17 +273,18 @@ namespace Agile_Project.Views.Forms
                     AutoSize = true,
                     ColumnCount = 2,
                     BackColor = Color.White,
-                    Margin = new Padding(0, 0, 0, 10)
+                    Margin = new Padding(0, 0, 0, 10),
+                    Dock = DockStyle.Fill 
                 };
                 rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
+                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180)); 
 
                 cmbAssign = new ComboBox
                 {
                     Dock = DockStyle.Fill,
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     FlatStyle = FlatStyle.Flat,
-                    Margin = new Padding(0, 0, 6, 0)
+                    Margin = new Padding(0, 0, 6, 0),
                 };
                 rowAssign.Controls.Add(cmbAssign, 0, 0);
 
@@ -256,7 +292,7 @@ namespace Agile_Project.Views.Forms
                 {
                     Text = "Assign",
                     Dock = DockStyle.Fill,
-                    Height = 28,
+                    Height = 45,
                     FlatStyle = FlatStyle.Flat,
                     BackColor = Color.FromArgb(83, 74, 183),
                     ForeColor = Color.White,
@@ -267,7 +303,7 @@ namespace Agile_Project.Views.Forms
                 layout.Controls.Add(rowAssign);
             }
 
-            // ── Save / Cancel ─────────────────────────────────────────
+            // Save / Cancel
             var btnPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -281,7 +317,7 @@ namespace Agile_Project.Views.Forms
             {
                 Text = "Cancel",
                 Width = 90,
-                Height = 30,
+                Height = 45,
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
                 Margin = new Padding(6, 0, 0, 0),
@@ -292,7 +328,7 @@ namespace Agile_Project.Views.Forms
             {
                 Text = "Save",
                 Width = 90,
-                Height = 30,
+                Height = 45,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(83, 74, 183),
                 ForeColor = Color.White,
@@ -312,7 +348,7 @@ namespace Agile_Project.Views.Forms
             CancelButton = btnCancel;
         }
 
-        // ── Data ──────────────────────────────────────────────────────
+        // Data
 
         private void LoadPersons()
         {
@@ -352,7 +388,7 @@ namespace Agile_Project.Views.Forms
                 cmbState.SelectedIndex = (int)_existing.State;
         }
 
-        // ── Event handlers ────────────────────────────────────────────
+        // Event handlers
 
         private void BtnAssign_Click(object? s, EventArgs e)
         {
@@ -418,7 +454,7 @@ namespace Agile_Project.Views.Forms
             Close();
         }
 
-        // ── Helpers ───────────────────────────────────────────────────
+        // Helpers
 
         private NumericUpDown MakeNum(int min, int max) => new NumericUpDown
         {
