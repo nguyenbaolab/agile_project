@@ -50,7 +50,7 @@ namespace Agile_Project.Views.Forms
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80));    // txtDesc
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));    // buttons
 
-            // --- Label: Project name ---
+            // Label: Project name
             var lblName = new Label
             {
                 Text = "Project name *",
@@ -60,7 +60,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(lblName, 0, 0);
 
-            // --- TextBox: Name ---
+            // TextBox: Name
             txtName = new TextBox
             {
                 Dock = DockStyle.Fill,
@@ -69,7 +69,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtName, 0, 1);
 
-            // --- Label: Description ---
+            // Label: Description
             var lblDesc = new Label
             {
                 Text = "Description",
@@ -79,7 +79,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(lblDesc, 0, 2);
 
-            // --- TextBox: Description ---
+            // TextBox: Description
             txtDesc = new TextBox
             {
                 Dock = DockStyle.Fill,
@@ -89,7 +89,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtDesc, 0, 3);
 
-            // --- Button row ---
+            // Button row
             var btnPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,

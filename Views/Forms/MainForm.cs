@@ -36,14 +36,13 @@ namespace Agile_Project.Views.Forms
         public MainForm()
         {
             Text = "Agile Project Manager";
-            Size = new Size(1100, 700);
+            Size = new Size(1500, 1000);
             MinimumSize = new Size(900, 600);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.FromArgb(245, 245, 243);
             Font = new Font("Segoe UI", 9f);
-            AutoScaleMode = AutoScaleMode.Font; // responsive fix
+            AutoScaleMode = AutoScaleMode.Font;
 
-            // --- Login trước khi build UI ---
             using var loginDlg = new LoginForm(_projectCtrl);
             if (loginDlg.ShowDialog() != DialogResult.OK)
             {
@@ -54,7 +53,6 @@ namespace Agile_Project.Views.Forms
             BuildUI();
             LoadProjects();
 
-            // Resize → refresh để card width luôn đúng
             Resize += (s, e) => { if (_selectedProject != null) RefreshBoard(); };
         }
 
@@ -63,6 +61,8 @@ namespace Agile_Project.Views.Forms
             BuildTopbar();
             BuildBoard();
         }
+
+        // Topbar
 
         private void BuildTopbar()
         {
@@ -99,7 +99,7 @@ namespace Agile_Project.Views.Forms
 
             cmbProjects = new ComboBox
             {
-                Width = 300,
+                Width = 350,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 FlatStyle = FlatStyle.Flat,
                 Margin = new Padding(0, 10, 8, 0)
@@ -128,14 +128,11 @@ namespace Agile_Project.Views.Forms
             btnReports = MakeTopBtn("Reports", Color.FromArgb(15, 110, 86));
             btnReports.Click += BtnReports_Click;
 
-            // --- Ẩn button theo role ---
             btnNewProject.Visible = PermissionService.CanDo("ManageProject");
             btnEditProject.Visible = PermissionService.CanDo("ManageProject");
             btnDeleteProject.Visible = PermissionService.CanDo("ManageProject");
             btnManagePersons.Visible = PermissionService.CanDo("AssignPerson");
-            // btnReports luôn hiện (ViewReport = true)
 
-            // Label hiển thị user đang login
             var lblUser = new Label
             {
                 Text = $"👤 {CurrentSession.Username} ({CurrentSession.Role})",
@@ -144,7 +141,6 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(12, 14, 8, 0)
             };
 
-            // Nút Logout
             var btnLogout = MakeTopBtn("Logout", Color.FromArgb(160, 45, 45));
             btnLogout.Margin = new Padding(0, 10, 8, 0);
             btnLogout.Click += BtnLogout_Click;
@@ -176,6 +172,8 @@ namespace Agile_Project.Views.Forms
                 FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193), BorderSize = 1 }
             };
         }
+
+        // Board layout
 
         private void BuildBoard()
         {
@@ -260,15 +258,14 @@ namespace Agile_Project.Views.Forms
             return col;
         }
 
-        // ── Responsive card width ─────────────────────────────────────
-        // Tính width dựa theo kích thước cột thực tế thay vì hardcode 260
+        // Responsive card width
         private int GetCardWidth()
         {
             int w = flpBacklog.ClientSize.Width - flpBacklog.Padding.Horizontal - 8;
             return Math.Max(200, w);
         }
 
-        // ── Data loading ──────────────────────────────────────────────
+        // Data loading
 
         private void LoadProjects()
         {
@@ -313,7 +310,6 @@ namespace Agile_Project.Views.Forms
                 }
             }
 
-            // "+ Add User Story" button — chỉ hiện nếu có quyền
             if (PermissionService.CanDo("ManageUserStory"))
             {
                 var btnAdd = new Button
@@ -323,7 +319,7 @@ namespace Agile_Project.Views.Forms
                     ForeColor = Color.FromArgb(100, 100, 96),
                     BackColor = Color.FromArgb(240, 239, 235),
                     Width = cardW,
-                    Height = 30,
+                    Height = 50,
                     Cursor = Cursors.Hand,
                     FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193), BorderSize = 1 }
                 };
@@ -343,7 +339,7 @@ namespace Agile_Project.Views.Forms
             flpDone.Controls.Clear();
         }
 
-        // ── Card builders ─────────────────────────────────────────────
+        // Card builders
 
         private Control MakeBacklogCard(UserStory story, int cardW)
         {
@@ -376,7 +372,6 @@ namespace Agile_Project.Views.Forms
             card.Controls.Add(lblMeta);
             y += 24;
 
-            // Buttons: chỉ hiện theo quyền
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
             {
@@ -466,7 +461,6 @@ namespace Agile_Project.Views.Forms
                 y += 8;
             }
 
-            // Buttons theo quyền
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
             {
@@ -555,7 +549,7 @@ namespace Agile_Project.Views.Forms
             return card;
         }
 
-        // Width giờ là tham số thay vì hardcode 260
+        // Card width
         private Panel MakeCardBase(int width)
         {
             return new Panel
@@ -593,7 +587,6 @@ namespace Agile_Project.Views.Forms
             };
             MakeRound(dot);
 
-            // Chỉ cho click cycle nếu có quyền ChangeTaskState
             if (PermissionService.CanDo("ChangeTaskState"))
             {
                 dot.Cursor = Cursors.Hand;
@@ -641,6 +634,8 @@ namespace Agile_Project.Views.Forms
             return row;
         }
 
+        // Helpers
+
         private void MakeRound(Panel p)
         {
             p.Region = System.Drawing.Region.FromHrgn(
@@ -669,7 +664,7 @@ namespace Agile_Project.Views.Forms
 
         private string GetAssignedPersonNames(int taskId) => "";
 
-        // ── Actions ───────────────────────────────────────────────────
+        // Story / Task actions
 
         private void MoveStory(UserStory story, UserStoryState newState)
         {
@@ -727,6 +722,8 @@ namespace Agile_Project.Views.Forms
             dlg.ShowDialog();
         }
 
+        // Topbar button handlers
+
         private void BtnAddStory_Click()
         {
             if (_selectedProject == null) return;
@@ -775,12 +772,10 @@ namespace Agile_Project.Views.Forms
 
         private void BtnLogout_Click(object? s, EventArgs e)
         {
-            // Clear session
             CurrentSession.PersonId = 0;
             CurrentSession.Username = "";
             CurrentSession.Role = "";
 
-            // Show login — nếu cancel thì thoát app, nếu OK thì rebuild UI tại chỗ
             using var loginDlg = new LoginForm(_projectCtrl);
             if (loginDlg.ShowDialog() != DialogResult.OK)
             {
@@ -788,7 +783,6 @@ namespace Agile_Project.Views.Forms
                 return;
             }
 
-            // Rebuild UI ngay trên form này, không tạo MainForm mới
             Controls.Clear();
             BuildUI();
             LoadProjects();
