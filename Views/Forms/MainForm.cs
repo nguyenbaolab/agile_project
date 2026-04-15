@@ -341,6 +341,7 @@ namespace Agile_Project.Views.Forms
 
         // Card builders
 
+        // Backlog card
         private Control MakeBacklogCard(UserStory story, int cardW)
         {
             var card = MakeCardBase(cardW);
@@ -352,12 +353,11 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 40, 38),
                 Location = new Point(10, y),
-                Width = cardW - 20,
-                AutoSize = false,
-                Height = 20
+                MaximumSize = new Size(cardW - 20, 0), // responsive width
+                AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += 22;
+            y += lblTitle.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
             var lblMeta = new Label
@@ -365,12 +365,12 @@ namespace Agile_Project.Views.Forms
                 Text = $"Priority: {story.Priority}  ·  {tasks.Count} tasks",
                 ForeColor = Color.FromArgb(130, 128, 122),
                 Location = new Point(10, y),
-                Width = cardW - 20,
-                Height = 18,
+                MaximumSize = new Size(cardW - 20, 0),
+                AutoSize = true,
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
-            y += 24;
+            y += lblMeta.Height + 8;
 
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
@@ -379,7 +379,7 @@ namespace Agile_Project.Views.Forms
                 btnMove.Location = new Point(btnX, y);
                 btnMove.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
                 card.Controls.Add(btnMove);
-                btnX = btnMove.Right + 4;
+                btnX = btnMove.Right + 6;
             }
 
             if (PermissionService.CanDo("AddTask"))
@@ -389,7 +389,7 @@ namespace Agile_Project.Views.Forms
                 btnAddTask.Click += (s, e) => AddTask(story);
                 card.Controls.Add(btnAddTask);
             }
-            y += 28;
+            y += 32;
 
             if (PermissionService.CanDo("ManageUserStory"))
             {
@@ -399,16 +399,17 @@ namespace Agile_Project.Views.Forms
                 card.Controls.Add(btnEdit);
 
                 var btnDel = MakeCardBtn("Delete", Color.FromArgb(160, 45, 45));
-                btnDel.Location = new Point(btnEdit.Right + 4, y);
+                btnDel.Location = new Point(btnEdit.Right + 6, y);
                 btnDel.Click += (s, e) => DeleteStory(story);
                 card.Controls.Add(btnDel);
-                y += 30;
+                y += 32;
             }
 
-            card.Height = y + 6;
+            card.Height = y + 8;
             return card;
         }
 
+        // Sprint card
         private Control MakeSprintCard(UserStory story, int cardW)
         {
             var card = MakeCardBase(cardW);
@@ -420,12 +421,11 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 40, 38),
                 Location = new Point(10, y),
-                Width = cardW - 20,
-                AutoSize = false,
-                Height = 20
+                MaximumSize = new Size(cardW - 20, 0),
+                AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += 22;
+            y += lblTitle.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
 
@@ -445,9 +445,10 @@ namespace Agile_Project.Views.Forms
                 {
                     var assignedPersons = _taskCtrl.GetById(task.TaskId) != null
                         ? GetAssignedPersonNames(task.TaskId) : "";
+
                     var taskRow = MakeTaskRow(task, story, assignedPersons, cardW, ref y);
                     card.Controls.Add(taskRow);
-                    y += taskRow.Height + 3;
+                    y += taskRow.Height + 4;
                 }
 
                 var sep2 = new Panel
@@ -470,10 +471,10 @@ namespace Agile_Project.Views.Forms
                 card.Controls.Add(btnDone);
 
                 var btnBack = MakeCardBtn("← Back", Color.FromArgb(100, 100, 96));
-                btnBack.Location = new Point(btnDone.Right + 4, y);
+                btnBack.Location = new Point(btnDone.Right + 6, y);
                 btnBack.Click += (s, e) => MoveStory(story, UserStoryState.ProjectBacklog);
                 card.Controls.Add(btnBack);
-                y += 28;
+                y += 32;
                 btnX = 10;
             }
 
@@ -483,19 +484,20 @@ namespace Agile_Project.Views.Forms
                 btnAddTask.Location = new Point(btnX, y);
                 btnAddTask.Click += (s, e) => AddTask(story);
                 card.Controls.Add(btnAddTask);
-                btnX = btnAddTask.Right + 4;
+                btnX = btnAddTask.Right + 6;
             }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
             btnReport.Location = new Point(btnX, y);
             btnReport.Click += (s, e) => ShowStoryReport(story);
             card.Controls.Add(btnReport);
-            y += 30;
+            y += 32;
 
-            card.Height = y + 6;
+            card.Height = y + 8;
             return card;
         }
 
+        // Done card
         private Control MakeDoneCard(UserStory story, int cardW)
         {
             var card = MakeCardBase(cardW);
@@ -508,26 +510,26 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(100, 130, 80),
                 Location = new Point(10, y),
-                Width = cardW - 20,
-                AutoSize = false,
-                Height = 20
+                MaximumSize = new Size(cardW - 20, 0),
+                AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += 22;
+            y += lblTitle.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
             int doneTasks = tasks.Count(t => t.State == TaskState.Done);
+
             var lblMeta = new Label
             {
                 Text = $"Priority: {story.Priority}  ·  {doneTasks}/{tasks.Count} tasks done",
                 ForeColor = Color.FromArgb(130, 155, 110),
                 Location = new Point(10, y),
-                Width = cardW - 20,
-                Height = 18,
+                MaximumSize = new Size(cardW - 20, 0),
+                AutoSize = true,
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
-            y += 24;
+            y += lblMeta.Height + 8;
 
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
@@ -536,20 +538,20 @@ namespace Agile_Project.Views.Forms
                 btnBack.Location = new Point(btnX, y);
                 btnBack.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
                 card.Controls.Add(btnBack);
-                btnX = btnBack.Right + 4;
+                btnX = btnBack.Right + 6;
             }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
             btnReport.Location = new Point(btnX, y);
             btnReport.Click += (s, e) => ShowStoryReport(story);
             card.Controls.Add(btnReport);
-            y += 30;
+            y += 32;
 
-            card.Height = y + 6;
+            card.Height = y + 8;
             return card;
         }
 
-        // Card width
+        // Card base
         private Panel MakeCardBase(int width)
         {
             return new Panel
