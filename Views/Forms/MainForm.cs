@@ -38,7 +38,7 @@ namespace Agile_Project.Views.Forms
             Text = "Agile Project Manager";
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            MinimumSize = new Size(900, 600);
+            MinimumSize = new Size(1300, 800);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.FromArgb(245, 245, 243);
             Font = new Font("Segoe UI", 9f);

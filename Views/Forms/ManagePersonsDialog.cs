@@ -23,8 +23,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            Size = new Size(600, 520);
-            MinimumSize = new Size(380, 360);
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -61,7 +61,8 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 5,
-                BackColor = Color.White
+                BackColor = Color.White,
+                AutoSize = true,
             };
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
@@ -155,8 +156,7 @@ namespace Agile_Project.Views.Forms
                 var btnRemove = new Button
                 {
                     Text = "Remove from project",
-                    Width = 112,
-                    Height = 105,
+                    AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 6),
@@ -210,8 +210,7 @@ namespace Agile_Project.Views.Forms
                 var btnLink = new Button
                 {
                     Text = "Link to project",
-                    Width = 112,
-                    Height = 80,
+                    AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     BackColor = Color.FromArgb(15, 110, 86),
                     ForeColor = Color.White,
@@ -228,8 +227,7 @@ namespace Agile_Project.Views.Forms
                 var btnDelete = new Button
                 {
                     Text = "Delete person",
-                    Width = 112,
-                    Height = 80,
+                    AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 0),
@@ -244,7 +242,7 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Data ──────────────────────────────────────────────────────
+        // Data 
 
         private void RefreshLists()
         {
@@ -259,7 +257,7 @@ namespace Agile_Project.Views.Forms
             lstAllPersons.DisplayMember = "Name";
         }
 
-        // ── Event handlers ────────────────────────────────────────────
+        // Event handlers
 
         private void BtnAddPerson_Click(object? s, EventArgs e)
         {
@@ -302,7 +300,7 @@ namespace Agile_Project.Views.Forms
             }
         }
 
-        // ── Helpers ───────────────────────────────────────────────────
+        // Helpers
 
         private Label MakeLabel(string text) => new Label
         {
