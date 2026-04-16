@@ -73,7 +73,6 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 1,
                 BackColor = Color.White,
                 Padding = new Padding(0),
-                AutoSize = true,
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
