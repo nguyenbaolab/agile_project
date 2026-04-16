@@ -102,8 +102,7 @@ namespace Agile_Project.Views.Forms
             var btnCancel = new Button
             {
                 Text = "Cancel",
-                Width = 90,
-                Height = 50,
+                AutoSize = true,
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
                 Margin = new Padding(6, 4, 0, 0),
@@ -113,8 +112,7 @@ namespace Agile_Project.Views.Forms
             var btnSave = new Button
             {
                 Text = "Save",
-                Width = 90,
-                Height = 50,
+                AutoSize = true,
                 DialogResult = DialogResult.None,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(83, 74, 183),

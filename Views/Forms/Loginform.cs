@@ -17,8 +17,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = "Login — Agile Project Manager";
-            Size = new Size(260, 240);
-            MinimumSize = new Size(260, 240);
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -38,7 +38,8 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 1,
                 RowCount = 6,
                 BackColor = Color.White,
-                Padding = new Padding(24, 20, 24, 16)
+                Padding = new Padding(24, 20, 24, 0),
+                AutoSize = true,
             };
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // title
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // lbl username
