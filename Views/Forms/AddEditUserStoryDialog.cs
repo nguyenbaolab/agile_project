@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using Agile_Project.Controllers;
@@ -16,8 +15,6 @@ namespace Agile_Project.Views.Forms
         private TextBox txtTitle = new();
         private TextBox txtDesc = new();
         private NumericUpDown numPriority = new();
-        private CheckedListBox clbDeps = new();
-        private List<UserStory> _allStories = new();
 
         public AddEditUserStoryDialog(UserStory? existing, int projectId, UserStoryController ctrl)
         {
@@ -38,7 +35,6 @@ namespace Agile_Project.Views.Forms
             AutoScaleMode = AutoScaleMode.Font;
 
             BuildUI();
-            LoadDependencies();
             if (existing != null) FillData();
         }
 
@@ -48,20 +44,17 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 8,
+                RowCount = 6,
                 BackColor = Color.White,
                 Padding = new Padding(16),
                 AutoSize = true,
             };
 
-            // Layout structure (fix description resizing)
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 65));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             // Title section
@@ -115,19 +108,6 @@ namespace Agile_Project.Views.Forms
             priorityRow.Controls.Add(numPriority);
             layout.Controls.Add(priorityRow, 0, 4);
 
-            // Dependencies section
-            layout.Controls.Add(MakeLabel("Depends on (other stories that must be InSprint/Done first):"), 0, 5);
-
-            clbDeps = new CheckedListBox
-            {
-                Dock = DockStyle.Fill,
-                BorderStyle = BorderStyle.FixedSingle,
-                CheckOnClick = true,
-                Margin = new Padding(0, 0, 0, 12),
-                HorizontalScrollbar = true
-            };
-            layout.Controls.Add(clbDeps, 0, 6);
-
             // Buttons section
             var btnPanel = new FlowLayoutPanel
             {
@@ -136,15 +116,15 @@ namespace Agile_Project.Views.Forms
                 WrapContents = false,
                 BackColor = Color.White,
                 Margin = new Padding(0),
-                Padding = new Padding(0, 0, 8, 8), 
-                AutoSize = false, 
+                Padding = new Padding(0, 0, 8, 8),
+                AutoSize = false,
                 Height = 45
             };
 
             var btnCancel = new Button
             {
                 Text = "Cancel",
-                AutoSize = true, 
+                AutoSize = true,
                 MinimumSize = new Size(90, 35),
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
@@ -168,26 +148,12 @@ namespace Agile_Project.Views.Forms
 
             btnPanel.Controls.Add(btnCancel);
             btnPanel.Controls.Add(btnSave);
-            layout.Controls.Add(btnPanel, 0, 7);
+            layout.Controls.Add(btnPanel, 0, 5);
 
             Controls.Add(layout);
 
             AcceptButton = btnSave;
             CancelButton = btnCancel;
-        }
-
-        private void LoadDependencies()
-        {
-            _allStories = _ctrl.GetByProject(_projectId);
-            clbDeps.Items.Clear();
-
-            foreach (var s in _allStories)
-            {
-                if (_existing != null && s.UserStoryId == _existing.UserStoryId) continue;
-                clbDeps.Items.Add(s);
-            }
-
-            clbDeps.DisplayMember = "Title";
         }
 
         private void FillData()

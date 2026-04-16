@@ -38,7 +38,7 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 1,
                 RowCount = 6,
                 BackColor = Color.White,
-                Padding = new Padding(24, 20, 24, 0),
+                Padding = new Padding(24, 20, 24, 12),
                 AutoSize = true,
             };
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // title
@@ -46,7 +46,7 @@ namespace Agile_Project.Views.Forms
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // txt username
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // lbl password
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // txt password
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // btn + error
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // btn + error
 
             var lblTitle = new Label
             {
