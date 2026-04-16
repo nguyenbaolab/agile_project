@@ -611,11 +611,11 @@ namespace Agile_Project.Views.Forms
 
             var dot = new Panel
             {
-                Size = new Size(20, 20),
-                Location = new Point(0, 6),
+                Size = new Size(15, 15),
+                Location = new Point(0, 4),
                 BackColor = dotColor
             };
-            MakeRound(dot);
+            // MakeRound(dot);
 
             if (PermissionService.CanDo("ChangeTaskState"))
             {
