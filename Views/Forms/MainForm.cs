@@ -611,7 +611,7 @@ namespace Agile_Project.Views.Forms
 
             var dot = new Panel
             {
-                Size = new Size(10, 10),
+                Size = new Size(20, 20),
                 Location = new Point(0, 6),
                 BackColor = dotColor
             };
