@@ -63,14 +63,23 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        public void Delete(int personId)
+        public bool Delete(int personId)
         {
             using var conn = DatabaseConnection.GetConnection();
             conn.Open();
+
+            var check = new MySqlCommand(
+                "SELECT IsSystemAccount FROM Persons WHERE PersonId=@Id", conn);
+            check.Parameters.AddWithValue("@Id", personId);
+            var result = check.ExecuteScalar();
+            if (result != null && Convert.ToInt32(result) == 1)
+                return false;
+
             var cmd = new MySqlCommand(
                 "DELETE FROM Persons WHERE PersonId=@Id", conn);
             cmd.Parameters.AddWithValue("@Id", personId);
             cmd.ExecuteNonQuery();
+            return true;
         }
 
         public void AddToProject(int projectId, int personId)
@@ -106,7 +115,7 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
-        // --- Login (thêm mới) ---
+        // Login
         public Person? Login(string username, string password)
         {
             using var conn = DatabaseConnection.GetConnection();
@@ -116,18 +125,21 @@ namespace Agile_Project.Models.Repositories
             cmd.Parameters.AddWithValue("@U", username);
             cmd.Parameters.AddWithValue("@P", password);
             using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                return new Person
-                {
-                    PersonId = Convert.ToInt32(reader["PersonId"]),
-                    Name = reader["Name"].ToString()!,
-                    Role = reader["Role"].ToString()!,
-                    Username = reader["Username"].ToString()!,
-                    ProfileRole = reader["ProfileRole"].ToString()!
-                };
-            }
+            if (reader.Read()) return MapFromReader(reader);
             return null;
+        }
+
+        private Person MapFromReader(MySqlDataReader reader)
+        {
+            return new Person
+            {
+                PersonId = Convert.ToInt32(reader["PersonId"]),
+                Name = reader["Name"].ToString()!,
+                Role = reader["Role"].ToString()!,
+                Username = reader["Username"] == DBNull.Value ? "" : reader["Username"].ToString()!,
+                ProfileRole = reader["ProfileRole"] == DBNull.Value ? "" : reader["ProfileRole"].ToString()!,
+                IsSystemAccount = reader["IsSystemAccount"] != DBNull.Value && Convert.ToInt32(reader["IsSystemAccount"]) == 1
+            };
         }
     }
 }

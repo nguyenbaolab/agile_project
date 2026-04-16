@@ -8,6 +8,7 @@ namespace Agile_Project.Models.Entities
 {
     public class Person
     {
+        public bool IsSystemAccount { get; set; } = false;
         public int PersonId { get; set; }
         public string Name { get; set; } = "";
         public string Role { get; set; } = "";

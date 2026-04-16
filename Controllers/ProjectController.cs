@@ -71,10 +71,12 @@ namespace Agile_Project.Controllers
             return true;
         }
 
-        public bool DeletePerson(int personId)
+        public (bool success, string message) DeletePerson(int personId)
         {
-            _personRepo.Delete(personId);
-            return true;
+            bool ok = _personRepo.Delete(personId);
+            return ok
+                ? (true, "Person deleted.")
+                : (false, "System accounts cannot be deleted.");
         }
 
         // Login

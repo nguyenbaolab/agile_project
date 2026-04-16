@@ -320,14 +320,26 @@ namespace Agile_Project.Views.Forms
                 return;
             }
 
+            // Guard: khong cho xoa system accounts
+            var systemAccounts = new[] { "Admin User", "Product Owner", "Developer" };
+            if (systemAccounts.Contains(p.Name))
+            {
+                MessageBox.Show("System accounts cannot be deleted.",
+                    "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var confirm = MessageBox.Show(
                 $"Permanently delete \"{p.Name}\"? This will remove them from all projects and tasks.",
                 "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (confirm == DialogResult.Yes)
             {
-                _ctrl.DeletePerson(p.PersonId);
-                RefreshLists();
+                var (ok, msg) = _ctrl.DeletePerson(p.PersonId);
+                if (!ok)
+                    MessageBox.Show(msg, "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else
+                    RefreshLists();
             }
         }
 

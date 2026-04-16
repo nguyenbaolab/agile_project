@@ -14,8 +14,8 @@ namespace Agile_Project.Database
         {
             CreateDatabaseIfNotExists();
             CreateTables();
-            AddAuthColumns();     
-            SeedDefaultAccounts(); 
+            AddAuthColumns();
+            SeedDefaultAccounts();
         }
 
         private static void CreateDatabaseIfNotExists()
@@ -23,9 +23,7 @@ namespace Agile_Project.Database
             string connStr = "Server=localhost;Port=3306;Uid=root;Pwd=;";
             using var conn = new MySqlConnection(connStr);
             conn.Open();
-            var cmd = new MySqlCommand(
-                "CREATE DATABASE IF NOT EXISTS agile_db;", conn);
-            cmd.ExecuteNonQuery();
+            new MySqlCommand("CREATE DATABASE IF NOT EXISTS agile_db;", conn).ExecuteNonQuery();
         }
 
         private static void CreateTables()
@@ -39,7 +37,7 @@ namespace Agile_Project.Database
                     Name VARCHAR(255) NOT NULL,
                     Description TEXT
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS Sprints (
                     SprintId INT AUTO_INCREMENT PRIMARY KEY,
                     Name VARCHAR(255) NOT NULL,
@@ -47,19 +45,19 @@ namespace Agile_Project.Database
                     EndDate DATE,
                     Status VARCHAR(50)
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS Teams (
                     TeamId INT AUTO_INCREMENT PRIMARY KEY,
                     Name VARCHAR(255) NOT NULL,
                     Role VARCHAR(100)
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS Persons (
                     PersonId INT AUTO_INCREMENT PRIMARY KEY,
                     Name VARCHAR(255) NOT NULL,
                     Role VARCHAR(100)
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS UserStories (
                     UserStoryId INT AUTO_INCREMENT PRIMARY KEY,
                     Title VARCHAR(255) NOT NULL,
@@ -71,7 +69,7 @@ namespace Agile_Project.Database
                     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE,
                     FOREIGN KEY (SprintId) REFERENCES Sprints(SprintId) ON DELETE SET NULL
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS Tasks (
                     TaskId INT AUTO_INCREMENT PRIMARY KEY,
                     Title VARCHAR(255) NOT NULL,
@@ -88,7 +86,7 @@ namespace Agile_Project.Database
                     UserStoryId INT NOT NULL,
                     FOREIGN KEY (UserStoryId) REFERENCES UserStories(UserStoryId) ON DELETE CASCADE
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS ProjectPersons (
                     ProjectId INT,
                     PersonId INT,
@@ -96,7 +94,7 @@ namespace Agile_Project.Database
                     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE,
                     FOREIGN KEY (PersonId) REFERENCES Persons(PersonId) ON DELETE CASCADE
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS TaskPersons (
                     TaskId INT,
                     PersonId INT,
@@ -104,7 +102,7 @@ namespace Agile_Project.Database
                     FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId) ON DELETE CASCADE,
                     FOREIGN KEY (PersonId) REFERENCES Persons(PersonId) ON DELETE CASCADE
                 );
-
+ 
                 CREATE TABLE IF NOT EXISTS UserStoryDependencies (
                     UserStoryId INT,
                     DependsOnUserStoryId INT,
@@ -123,7 +121,6 @@ namespace Agile_Project.Database
             }
         }
 
-        // Them cot auth vao Persons (dùng IF NOT EXISTS safe pattern)
         private static void AddAuthColumns()
         {
             using var conn = DatabaseConnection.GetConnection();
@@ -131,9 +128,10 @@ namespace Agile_Project.Database
 
             var alterStatements = new[]
             {
-                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Username VARCHAR(100) NULL",
-                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Password VARCHAR(100) NULL",
-                @"ALTER TABLE Persons ADD COLUMN IF NOT EXISTS ProfileRole VARCHAR(50) DEFAULT 'Developer'"
+                "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Username VARCHAR(100) NULL",
+                "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Password VARCHAR(100) NULL",
+                "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS ProfileRole VARCHAR(50) DEFAULT 'Developer'",
+                "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS IsSystemAccount TINYINT(1) DEFAULT 0"
             };
 
             foreach (var sql in alterStatements)
@@ -143,11 +141,10 @@ namespace Agile_Project.Database
                     using var cmd = new MySqlCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                 }
-                catch { /* da co thi bo qua */ }
+                catch {  }
             }
         }
 
-        // Them 3 tai khoan mac dinh neu chua co
         private static void SeedDefaultAccounts()
         {
             using var conn = DatabaseConnection.GetConnection();
@@ -165,11 +162,11 @@ namespace Agile_Project.Database
                 var check = new MySqlCommand(
                     "SELECT COUNT(*) FROM Persons WHERE Username=@U", conn);
                 check.Parameters.AddWithValue("@U", username);
-                var count = Convert.ToInt32(check.ExecuteScalar());
-                if (count > 0) continue;
+                if (Convert.ToInt32(check.ExecuteScalar()) > 0) continue;
 
-                var insert = new MySqlCommand(
-                    "INSERT INTO Persons (Name, Role, Username, Password, ProfileRole) VALUES (@N,@R,@U,@P,@PR)", conn);
+                var insert = new MySqlCommand(@"
+                    INSERT INTO Persons (Name, Role, Username, Password, ProfileRole, IsSystemAccount)
+                    VALUES (@N, @R, @U, @P, @PR, 1)", conn);
                 insert.Parameters.AddWithValue("@N", name);
                 insert.Parameters.AddWithValue("@R", role);
                 insert.Parameters.AddWithValue("@U", username);
