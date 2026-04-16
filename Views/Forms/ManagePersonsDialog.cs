@@ -23,9 +23,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            MinimumSize = new Size(600, 500);
+            Size = new Size(600, 500);
+            MinimumSize = new Size(500, 380);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -62,8 +61,7 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 5,
-                BackColor = Color.White,
-                AutoSize = true,
+                BackColor = Color.White
             };
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
