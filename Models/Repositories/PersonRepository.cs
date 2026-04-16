@@ -72,7 +72,7 @@ namespace Agile_Project.Models.Repositories
                 "SELECT IsSystemAccount FROM Persons WHERE PersonId=@Id", conn);
             check.Parameters.AddWithValue("@Id", personId);
             var result = check.ExecuteScalar();
-            if (result != null && Convert.ToInt32(result) == 1)
+            if (result != null && result != DBNull.Value && Convert.ToInt32(result) == 1)
                 return false;
 
             var cmd = new MySqlCommand(
@@ -131,15 +131,34 @@ namespace Agile_Project.Models.Repositories
 
         private Person MapFromReader(MySqlDataReader reader)
         {
+            bool isSystem = false;
+            try
+            {
+                var col = reader["IsSystemAccount"];
+                if (col != DBNull.Value)
+                    isSystem = Convert.ToInt32(col) == 1;
+            }
+            catch {  }
+
             return new Person
             {
                 PersonId = Convert.ToInt32(reader["PersonId"]),
                 Name = reader["Name"].ToString()!,
-                Role = reader["Role"].ToString()!,
-                Username = reader["Username"] == DBNull.Value ? "" : reader["Username"].ToString()!,
-                ProfileRole = reader["ProfileRole"] == DBNull.Value ? "" : reader["ProfileRole"].ToString()!,
-                IsSystemAccount = reader["IsSystemAccount"] != DBNull.Value && Convert.ToInt32(reader["IsSystemAccount"]) == 1
+                Role = reader["Role"] == DBNull.Value ? "" : reader["Role"].ToString()!,
+                Username = SafeString(reader, "Username"),
+                ProfileRole = SafeString(reader, "ProfileRole"),
+                IsSystemAccount = isSystem
             };
+        }
+
+        private static string SafeString(MySqlDataReader reader, string column)
+        {
+            try
+            {
+                var val = reader[column];
+                return val == DBNull.Value ? "" : val.ToString()!;
+            }
+            catch { return ""; }
         }
     }
 }

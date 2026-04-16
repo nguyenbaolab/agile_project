@@ -16,6 +16,7 @@ namespace Agile_Project.Database
             CreateTables();
             AddAuthColumns();
             SeedDefaultAccounts();
+            UpdateSystemAccountFlags();
         }
 
         private static void CreateDatabaseIfNotExists()
@@ -141,7 +142,7 @@ namespace Agile_Project.Database
                     using var cmd = new MySqlCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                 }
-                catch {  }
+                catch { }
             }
         }
 
@@ -173,6 +174,26 @@ namespace Agile_Project.Database
                 insert.Parameters.AddWithValue("@P", password);
                 insert.Parameters.AddWithValue("@PR", profileRole);
                 insert.ExecuteNonQuery();
+            }
+        }
+
+        // FIX: update DB cũ đã seed trước khi có cột IsSystemAccount
+        private static void UpdateSystemAccountFlags()
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            var systemUsernames = new[] { "admin", "po", "dev" };
+            foreach (var username in systemUsernames)
+            {
+                try
+                {
+                    var cmd = new MySqlCommand(
+                        "UPDATE Persons SET IsSystemAccount = 1 WHERE Username = @U", conn);
+                    cmd.Parameters.AddWithValue("@U", username);
+                    cmd.ExecuteNonQuery();
+                }
+                catch { }
             }
         }
     }
