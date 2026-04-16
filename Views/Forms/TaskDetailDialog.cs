@@ -41,8 +41,8 @@ namespace Agile_Project.Views.Forms
             _taskCtrl = taskCtrl;
 
             Text = existing == null ? "Add Task" : "Task Detail";
-            Size = new Size(700, 900);
-            MinimumSize = new Size(420, 500);
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -72,7 +72,8 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Top,
                 ColumnCount = 1,
                 BackColor = Color.White,
-                Padding = new Padding(0)
+                Padding = new Padding(0),
+                AutoSize = true,
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
@@ -255,8 +256,7 @@ namespace Agile_Project.Views.Forms
                 var btnRemovePerson = new Button
                 {
                     Text = "Remove",
-                    Width = 110,
-                    Height = 45,
+                    AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
                     Margin = new Padding(0, 0, 0, 4),
@@ -292,7 +292,7 @@ namespace Agile_Project.Views.Forms
                 {
                     Text = "Assign",
                     Dock = DockStyle.Fill,
-                    Height = 45,
+                    AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     BackColor = Color.FromArgb(83, 74, 183),
                     ForeColor = Color.White,
@@ -316,8 +316,7 @@ namespace Agile_Project.Views.Forms
             var btnCancel = new Button
             {
                 Text = "Cancel",
-                Width = 90,
-                Height = 45,
+                AutoSize = true,
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
                 Margin = new Padding(6, 0, 0, 0),
@@ -327,8 +326,7 @@ namespace Agile_Project.Views.Forms
             var btnSave = new Button
             {
                 Text = "Save",
-                Width = 90,
-                Height = 45,
+                AutoSize = true,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(83, 74, 183),
                 ForeColor = Color.White,

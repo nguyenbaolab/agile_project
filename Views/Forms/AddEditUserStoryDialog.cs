@@ -27,8 +27,8 @@ namespace Agile_Project.Views.Forms
 
             Text = existing == null ? "Add User Story" : "Edit User Story";
 
-            Size = new Size(750, 700);
-            MinimumSize = new Size(420, 400);
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = false;
@@ -50,7 +50,8 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 1,
                 RowCount = 8,
                 BackColor = Color.White,
-                Padding = new Padding(16)
+                Padding = new Padding(16),
+                AutoSize = true,
             };
 
             // Layout structure (fix description resizing)

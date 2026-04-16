@@ -23,8 +23,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
+            AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
