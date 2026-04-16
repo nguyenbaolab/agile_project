@@ -20,7 +20,8 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = existing == null ? "New Project" : "Edit Project";
-            Size = new Size(430, 350);
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -41,7 +42,8 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 1,
                 RowCount = 5, // lblName, txtName, lblDesc, txtDesc, buttons
                 BackColor = Color.White,
-                Padding = new Padding(0)
+                Padding = new Padding(0),
+                AutoSize = true,
             };
 
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));        // label Name
