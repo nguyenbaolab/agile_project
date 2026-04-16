@@ -25,7 +25,7 @@ namespace Agile_Project.Views.Forms
             Text = $"Manage Persons — {project.Name}";
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            MinimumSize = new Size(700, 550);
+            MinimumSize = new Size(700, 600);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;

@@ -277,7 +277,7 @@ namespace Agile_Project.Views.Forms
                     Dock = DockStyle.Fill 
                 };
                 rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180)); 
+                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120)); 
 
                 cmbAssign = new ComboBox
                 {
@@ -291,7 +291,6 @@ namespace Agile_Project.Views.Forms
                 var btnAssign = new Button
                 {
                     Text = "Assign",
-                    Dock = DockStyle.Fill,
                     AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     BackColor = Color.FromArgb(83, 74, 183),
