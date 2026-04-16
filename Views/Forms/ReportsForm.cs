@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using Agile_Project.Controllers;
 using Agile_Project.Models.Entities;
 
@@ -26,7 +27,7 @@ namespace Agile_Project.Views.Forms
             _projectCtrl = projectCtrl;
 
             Text = $"Reports — {project.Name}";
-            Size = new Size(660, 520);
+            Size = new Size(720, 560);
             FormBorderStyle = FormBorderStyle.Sizable;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
@@ -43,6 +44,7 @@ namespace Agile_Project.Views.Forms
             tabs.TabPages.Add(BuildSprintReportTab());
             tabs.TabPages.Add(BuildUserStoryReportTab());
             tabs.TabPages.Add(BuildPersonReportTab());
+            tabs.TabPages.Add(BuildBurndownTab()); // NEW
 
             Controls.Add(tabs);
 
@@ -50,7 +52,7 @@ namespace Agile_Project.Views.Forms
                 tabs.SelectedIndex = 2;
         }
 
-        // ── Project Report ────────────────────────────────────────────
+        // Project Report
 
         private TabPage BuildProjectReportTab()
         {
@@ -86,7 +88,7 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Sprint Report ─────────────────────────────────────────────
+        // Sprint Report
 
         private TabPage BuildSprintReportTab()
         {
@@ -142,13 +144,12 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── User Story Report ─────────────────────────────────────────
+        // User Story Report
 
         private TabPage BuildUserStoryReportTab()
         {
             var tp = new TabPage("User Story");
 
-            // Dùng TableLayoutPanel thay vì tính txt.Top/Height tay
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -157,10 +158,9 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Padding = new Padding(0)
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));  // combobox
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // report text
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            // --- Combobox row ---
             var cmbPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -184,7 +184,6 @@ namespace Agile_Project.Views.Forms
             cmbPanel.Controls.Add(cmbStories);
             layout.Controls.Add(cmbPanel, 0, 0);
 
-            // --- Report text ---
             var txt = MakeReportTextBox();
             layout.Controls.Add(txt, 0, 1);
 
@@ -228,13 +227,12 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Person Report ─────────────────────────────────────────────
+        // Person Report
 
         private TabPage BuildPersonReportTab()
         {
             var tp = new TabPage("Person");
 
-            // Dùng TableLayoutPanel thay vì tính txt.Top/Height tay
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -243,10 +241,9 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Padding = new Padding(0)
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));  // combobox
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // report text
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            // --- Combobox row ---
             var cmbPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -265,7 +262,6 @@ namespace Agile_Project.Views.Forms
             cmbPanel.Controls.Add(cmbPersons);
             layout.Controls.Add(cmbPanel, 0, 0);
 
-            // --- Report text ---
             var txt = MakeReportTextBox();
             layout.Controls.Add(txt, 0, 1);
 
@@ -308,7 +304,177 @@ namespace Agile_Project.Views.Forms
             return tp;
         }
 
-        // ── Helpers ───────────────────────────────────────────────────
+        // Burndown Chart
+
+        private TabPage BuildBurndownTab()
+        {
+            var tp = new TabPage("Burndown Chart");
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.White
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+            // Top bar: label + info
+            var topBar = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                BackColor = Color.FromArgb(250, 250, 249),
+                Padding = new Padding(8, 8, 8, 0)
+            };
+            var lblInfo = new Label
+            {
+                AutoSize = true,
+                ForeColor = Color.FromArgb(80, 80, 76),
+                Text = "Sprint burndown — tasks remaining over time"
+            };
+            topBar.Controls.Add(lblInfo);
+            layout.Controls.Add(topBar, 0, 0);
+
+            // Chart
+            var chart = new Chart { Dock = DockStyle.Fill, BackColor = Color.White };
+
+            var chartArea = new ChartArea("main")
+            {
+                BackColor = Color.White,
+                AxisX =
+                {
+                    Title = "Date",
+                    TitleFont = new Font("Segoe UI", 8f),
+                    LabelStyle = { Format = "MM/dd", Angle = -30, Font = new Font("Segoe UI", 7.5f) },
+                    MajorGrid = { LineColor = Color.FromArgb(230, 228, 224) },
+                    LineColor = Color.FromArgb(180, 178, 170)
+                },
+                AxisY =
+                {
+                    Title = "Tasks remaining",
+                    TitleFont = new Font("Segoe UI", 8f),
+                    LabelStyle = { Font = new Font("Segoe UI", 7.5f) },
+                    MajorGrid = { LineColor = Color.FromArgb(230, 228, 224) },
+                    LineColor = Color.FromArgb(180, 178, 170),
+                    Minimum = 0
+                }
+            };
+            chart.ChartAreas.Add(chartArea);
+
+            // Legend
+            chart.Legends.Add(new Legend("main")
+            {
+                Docking = Docking.Bottom,
+                Font = new Font("Segoe UI", 8f),
+                BackColor = Color.White
+            });
+
+            // Ideal line series
+            var idealSeries = new Series("Ideal")
+            {
+                ChartType = SeriesChartType.Line,
+                Color = Color.FromArgb(180, 178, 170),
+                BorderWidth = 2,
+                BorderDashStyle = ChartDashStyle.Dash,
+                ChartArea = "main",
+                Legend = "main",
+                XValueType = ChartValueType.DateTime
+            };
+
+            // Actual line series
+            var actualSeries = new Series("Actual")
+            {
+                ChartType = SeriesChartType.Line,
+                Color = Color.FromArgb(83, 74, 183),
+                BorderWidth = 3,
+                MarkerStyle = MarkerStyle.Circle,
+                MarkerSize = 6,
+                ChartArea = "main",
+                Legend = "main",
+                XValueType = ChartValueType.DateTime
+            };
+
+            chart.Series.Add(idealSeries);
+            chart.Series.Add(actualSeries);
+
+            // Populate data
+            PopulateBurndown(idealSeries, actualSeries, lblInfo);
+
+            layout.Controls.Add(chart, 0, 1);
+            tp.Controls.Add(layout);
+            return tp;
+        }
+
+        private void PopulateBurndown(Series idealSeries, Series actualSeries, Label lblInfo)
+        {
+            // Lấy tất cả tasks của stories đang InSprint
+            var sprintStories = _storyCtrl.GetByProject(_project.ProjectId)
+                .Where(s => s.State == UserStoryState.InSprint).ToList();
+
+            var allTasks = sprintStories
+                .SelectMany(s => _taskCtrl.GetByUserStory(s.UserStoryId))
+                .ToList();
+
+            if (allTasks.Count == 0)
+            {
+                lblInfo.Text = "No tasks in sprint yet.";
+                lblInfo.ForeColor = Color.FromArgb(160, 45, 45);
+                return;
+            }
+
+            // Xác định date range:
+            // Start = PlannedStartDate sớm nhất (fallback: hôm nay - 7 ngày)
+            // End   = PlannedEndDate muộn nhất   (fallback: hôm nay + 7 ngày)
+            var tasksWithStart = allTasks.Where(t => t.PlannedStartDate.HasValue).ToList();
+            var tasksWithEnd = allTasks.Where(t => t.PlannedEndDate.HasValue).ToList();
+
+            DateTime startDate = tasksWithStart.Count > 0
+                ? tasksWithStart.Min(t => t.PlannedStartDate!.Value.Date)
+                : DateTime.Today.AddDays(-7);
+
+            DateTime endDate = tasksWithEnd.Count > 0
+                ? tasksWithEnd.Max(t => t.PlannedEndDate!.Value.Date)
+                : DateTime.Today.AddDays(7);
+
+            // Đảm bảo endDate >= hôm nay để chart không bị cụt
+            if (endDate < DateTime.Today) endDate = DateTime.Today;
+            // Đảm bảo range hợp lệ
+            if (endDate <= startDate) endDate = startDate.AddDays(1);
+
+            int totalTasks = allTasks.Count;
+            int totalDays = (int)(endDate - startDate).TotalDays;
+
+            lblInfo.Text = $"Sprint burndown  |  {totalTasks} tasks  |  {startDate:dd/MM} → {endDate:dd/MM}";
+
+            // ── Ideal line: từ totalTasks → 0 theo đường thẳng ────────
+            idealSeries.Points.AddXY(startDate.ToOADate(), totalTasks);
+            idealSeries.Points.AddXY(endDate.ToOADate(), 0);
+
+            // ── Actual line: mỗi ngày đếm số tasks CHƯA done ──────────
+            // Logic: task được coi là "done vào ngày D" nếu ActualEndDate == D
+            // Số tasks remaining vào ngày D = tổng tasks - số tasks có ActualEndDate <= D
+            for (int i = 0; i <= totalDays; i++)
+            {
+                var day = startDate.AddDays(i);
+
+                // Chỉ vẽ actual đến hôm nay (tương lai chưa có dữ liệu)
+                if (day > DateTime.Today) break;
+
+                int completedByDay = allTasks.Count(t =>
+                    t.ActualEndDate.HasValue && t.ActualEndDate.Value.Date <= day);
+
+                int remaining = totalTasks - completedByDay;
+                actualSeries.Points.AddXY(day.ToOADate(), remaining);
+            }
+
+            // Nếu không có task nào có ActualEndDate → chỉ hiện điểm đầu
+            if (actualSeries.Points.Count == 0)
+                actualSeries.Points.AddXY(startDate.ToOADate(), totalTasks);
+        }
+
+        // Helpers
 
         private RichTextBox MakeReportTextBox()
         {
