@@ -25,7 +25,7 @@ namespace Agile_Project.Views.Forms
             Text = $"Manage Persons — {project.Name}";
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            MinimumSize = new Size(700, 600);
+            MinimumSize = new Size(600, 500);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -138,7 +138,9 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 0, 8, 0)
+                Margin = new Padding(0, 0, 8, 0),
+                Height = 300,
+                Width = 300
             };
             layout.Controls.Add(lstProjectPersons, 0, 0);
 
@@ -192,7 +194,9 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 0, 8, 0)
+                Margin = new Padding(0, 0, 8, 0),
+                Height = 300,
+                Width = 300
             };
             layout.Controls.Add(lstAllPersons, 0, 0);
 
