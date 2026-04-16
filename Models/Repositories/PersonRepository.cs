@@ -84,6 +84,17 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
+        public void RemoveFromProject(int projectId, int personId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(
+                "DELETE FROM ProjectPersons WHERE ProjectId=@ProjectId AND PersonId=@PersonId", conn);
+            cmd.Parameters.AddWithValue("@ProjectId", projectId);
+            cmd.Parameters.AddWithValue("@PersonId", personId);
+            cmd.ExecuteNonQuery();
+        }
+
         public void RemoveFromTask(int taskId, int personId)
         {
             using var conn = DatabaseConnection.GetConnection();

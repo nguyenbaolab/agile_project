@@ -53,6 +53,12 @@ namespace Agile_Project.Controllers
             return true;
         }
 
+        public bool RemovePersonFromProject(int projectId, int personId)
+        {
+            _personRepo.RemoveFromProject(projectId, personId);
+            return true;
+        }
+
         public List<Person> GetAllPersons()
         {
             return _personRepo.GetAll();
@@ -62,6 +68,12 @@ namespace Agile_Project.Controllers
         {
             if (string.IsNullOrWhiteSpace(name)) return false;
             _personRepo.Add(new Person { Name = name, Role = role });
+            return true;
+        }
+
+        public bool DeletePerson(int personId)
+        {
+            _personRepo.Delete(personId);
             return true;
         }
 

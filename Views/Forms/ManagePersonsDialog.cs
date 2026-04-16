@@ -233,7 +233,7 @@ namespace Agile_Project.Views.Forms
                     Margin = new Padding(0, 0, 0, 0),
                     FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
                 };
-                // Delete not in current controller API, placeholder
+                btnDelete.Click += BtnDeletePerson_Click;
                 btnCol.Controls.Add(btnDelete);
             }
 
@@ -284,10 +284,21 @@ namespace Agile_Project.Views.Forms
 
         private void BtnRemoveFromProject_Click(object? s, EventArgs e)
         {
-            if (lstProjectPersons.SelectedItem is Person)
+            if (lstProjectPersons.SelectedItem is not Person p)
             {
-                MessageBox.Show("Remove from project not yet wired to controller.",
-                    "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select a person first.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Remove \"{p.Name}\" from project \"{_project.Name}\"?",
+                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                _ctrl.RemovePersonFromProject(_project.ProjectId, p.PersonId);
+                RefreshLists();
             }
         }
 
@@ -296,6 +307,26 @@ namespace Agile_Project.Views.Forms
             if (lstAllPersons.SelectedItem is Person p)
             {
                 _ctrl.AddPersonToProject(_project.ProjectId, p.PersonId);
+                RefreshLists();
+            }
+        }
+
+        private void BtnDeletePerson_Click(object? s, EventArgs e)
+        {
+            if (lstAllPersons.SelectedItem is not Person p)
+            {
+                MessageBox.Show("Please select a person first.", "Info",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"Permanently delete \"{p.Name}\"? This will remove them from all projects and tasks.",
+                "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                _ctrl.DeletePerson(p.PersonId);
                 RefreshLists();
             }
         }
