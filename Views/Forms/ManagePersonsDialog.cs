@@ -134,7 +134,6 @@ namespace Agile_Project.Views.Forms
 
             lstProjectPersons = new ListBox
             {
-                Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
                 Margin = new Padding(0, 0, 8, 0),
                 Height = 300,
@@ -190,7 +189,6 @@ namespace Agile_Project.Views.Forms
 
             lstAllPersons = new ListBox
             {
-                Dock = DockStyle.Fill,
                 BorderStyle = BorderStyle.FixedSingle,
                 Margin = new Padding(0, 0, 8, 0),
                 Height = 300,
