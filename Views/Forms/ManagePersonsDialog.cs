@@ -23,7 +23,7 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            Size = new Size(500, 380);
+            Size = new Size(500, 410);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -129,7 +129,7 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
 
             lstProjectPersons = new ListBox
             {
@@ -184,7 +184,7 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
 
             lstAllPersons = new ListBox
             {
