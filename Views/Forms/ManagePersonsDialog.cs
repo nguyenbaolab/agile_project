@@ -23,8 +23,7 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            Size = new Size(600, 500);
-            MinimumSize = new Size(500, 380);
+            Size = new Size(500, 380);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -159,7 +158,7 @@ namespace Agile_Project.Views.Forms
                     AutoSize = true,
                     FlatStyle = FlatStyle.Flat,
                     ForeColor = Color.FromArgb(160, 45, 45),
-                    Margin = new Padding(0, 0, 0, 6),
+                    Margin = new Padding(0, 0, 8, 6),
                     FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
                 };
                 btnRemove.Click += BtnRemoveFromProject_Click;
