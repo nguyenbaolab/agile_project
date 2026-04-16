@@ -355,7 +355,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(40, 40, 38),
                 Location = new Point(10, y),
-                MaximumSize = new Size(cardW - 20, 0), // responsive width
+                MaximumSize = new Size(cardW - 20, 0),
                 AutoSize = true
             };
             card.Controls.Add(lblTitle);
@@ -390,6 +390,15 @@ namespace Agile_Project.Views.Forms
                 btnAddTask.Location = new Point(btnX, y);
                 btnAddTask.Click += (s, e) => AddTask(story);
                 card.Controls.Add(btnAddTask);
+                btnX = btnAddTask.Right + 6;
+            }
+
+            if (tasks.Count > 0)
+            {
+                var btnView = MakeCardBtn("View Tasks", Color.FromArgb(15, 110, 86));
+                btnView.Location = new Point(btnX, y);
+                btnView.Click += (s, e) => OpenViewTasksForm(story);
+                card.Controls.Add(btnView);
             }
             y += 32;
 
@@ -447,7 +456,6 @@ namespace Agile_Project.Views.Forms
                 {
                     var assignedPersons = _taskCtrl.GetById(task.TaskId) != null
                         ? GetAssignedPersonNames(task.TaskId) : "";
-
                     var taskRow = MakeTaskRow(task, story, assignedPersons, cardW, ref y);
                     card.Controls.Add(taskRow);
                     y += taskRow.Height + 4;
@@ -487,6 +495,15 @@ namespace Agile_Project.Views.Forms
                 btnAddTask.Click += (s, e) => AddTask(story);
                 card.Controls.Add(btnAddTask);
                 btnX = btnAddTask.Right + 6;
+            }
+
+            if (tasks.Count > 0)
+            {
+                var btnView = MakeCardBtn("View Tasks", Color.FromArgb(15, 110, 86));
+                btnView.Location = new Point(btnX, y);
+                btnView.Click += (s, e) => OpenViewTasksForm(story);
+                card.Controls.Add(btnView);
+                btnX = btnView.Right + 6;
             }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
@@ -541,6 +558,15 @@ namespace Agile_Project.Views.Forms
                 btnBack.Click += (s, e) => MoveStory(story, UserStoryState.InSprint);
                 card.Controls.Add(btnBack);
                 btnX = btnBack.Right + 6;
+            }
+
+            if (tasks.Count > 0)
+            {
+                var btnView = MakeCardBtn("View Tasks", Color.FromArgb(15, 110, 86));
+                btnView.Location = new Point(btnX, y);
+                btnView.Click += (s, e) => OpenViewTasksForm(story);
+                card.Controls.Add(btnView);
+                btnX = btnView.Right + 6;
             }
 
             var btnReport = MakeCardBtn("Report", Color.FromArgb(60, 60, 58));
@@ -718,6 +744,18 @@ namespace Agile_Project.Views.Forms
                 _storyCtrl.DeleteUserStory(story.UserStoryId);
                 RefreshBoard();
             }
+        }
+
+        private void OpenViewTasksForm(UserStory story)
+        {
+            var dlg = new ViewTasksForm(
+                story.UserStoryId,
+                story.Title,
+                _taskCtrl,
+                _projectCtrl,
+                _selectedProject!.ProjectId);
+            dlg.ShowDialog();
+            RefreshBoard();
         }
 
         private void ShowStoryReport(UserStory story)

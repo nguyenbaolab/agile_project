@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Agile_Project.Controllers;
 using Agile_Project.Models;
@@ -13,6 +15,10 @@ namespace Agile_Project.Views.Forms
         private readonly ProjectController _projectCtrl;
         private readonly UserStory _story;
         private readonly ProjectTask? _existing;
+
+        // Tracks persons staged for assignment when adding a NEW task.
+        // Key = PersonId, Value = display Name (so we can show name in ListBox).
+        private readonly Dictionary<int, string> _stagedPersons = new();
 
         private TextBox txtTitle = new();
         private NumericUpDown numPriority = new();
@@ -145,49 +151,25 @@ namespace Agile_Project.Views.Forms
 
             int chkWidth = 110;
 
-            chkPlannedStart = new CheckBox
-            {
-                Text = "Planned start",
-                AutoSize = true,
-                Width = chkWidth,
-                Margin = new Padding(0, 4, 8, 4)
-            };
+            chkPlannedStart = new CheckBox { Text = "Planned start", AutoSize = true, Width = chkWidth, Margin = new Padding(0, 4, 8, 4) };
             dtpPlannedStart = MakeDtp();
             chkPlannedStart.CheckedChanged += (s, e) => dtpPlannedStart.Enabled = chkPlannedStart.Checked;
             rowDates.Controls.Add(chkPlannedStart);
             rowDates.Controls.Add(dtpPlannedStart);
 
-            chkPlannedEnd = new CheckBox
-            {
-                Text = "Planned end",
-                AutoSize = true,
-                Width = chkWidth,
-                Margin = new Padding(0, 4, 8, 4)
-            };
+            chkPlannedEnd = new CheckBox { Text = "Planned end", AutoSize = true, Width = chkWidth, Margin = new Padding(0, 4, 8, 4) };
             dtpPlannedEnd = MakeDtp();
             chkPlannedEnd.CheckedChanged += (s, e) => dtpPlannedEnd.Enabled = chkPlannedEnd.Checked;
             rowDates.Controls.Add(chkPlannedEnd);
             rowDates.Controls.Add(dtpPlannedEnd);
 
-            chkActualStart = new CheckBox
-            {
-                Text = "Actual start",
-                AutoSize = true,
-                Width = chkWidth,
-                Margin = new Padding(0, 4, 8, 4)
-            };
+            chkActualStart = new CheckBox { Text = "Actual start", AutoSize = true, Width = chkWidth, Margin = new Padding(0, 4, 8, 4) };
             dtpActualStart = MakeDtp();
             chkActualStart.CheckedChanged += (s, e) => dtpActualStart.Enabled = chkActualStart.Checked;
             rowDates.Controls.Add(chkActualStart);
             rowDates.Controls.Add(dtpActualStart);
 
-            chkActualEnd = new CheckBox
-            {
-                Text = "Actual end",
-                AutoSize = true,
-                Width = chkWidth,
-                Margin = new Padding(0, 4, 8, 4)
-            };
+            chkActualEnd = new CheckBox { Text = "Actual end", AutoSize = true, Width = chkWidth, Margin = new Padding(0, 4, 8, 4) };
             dtpActualEnd = MakeDtp();
             chkActualEnd.CheckedChanged += (s, e) => dtpActualEnd.Enabled = chkActualEnd.Checked;
             rowDates.Controls.Add(chkActualEnd);
@@ -195,7 +177,7 @@ namespace Agile_Project.Views.Forms
 
             layout.Controls.Add(rowDates);
 
-            // State — chỉ hiện nếu InSprint VÀ có quyền ChangeTaskState
+            // State — only visible for InSprint stories with permission
             if (_story.State == UserStoryState.InSprint && PermissionService.CanDo("ChangeTaskState"))
             {
                 layout.Controls.Add(MakeLabel("State"));
@@ -221,7 +203,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(sep);
 
-            // Assigned persons — chỉ hiện nếu có quyền AssignPerson
+            // Assigned persons section — visible only if user has permission
             if (PermissionService.CanDo("AssignPerson"))
             {
                 layout.Controls.Add(MakeLabel("Assigned persons"));
@@ -235,7 +217,7 @@ namespace Agile_Project.Views.Forms
                     Dock = DockStyle.Fill
                 };
                 rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120)); 
+                rowPersons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
 
                 lstPersons = new ListBox
                 {
@@ -274,10 +256,10 @@ namespace Agile_Project.Views.Forms
                     ColumnCount = 2,
                     BackColor = Color.White,
                     Margin = new Padding(0, 0, 0, 10),
-                    Dock = DockStyle.Fill 
+                    Dock = DockStyle.Fill
                 };
                 rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120)); 
+                rowAssign.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
 
                 cmbAssign = new ComboBox
                 {
@@ -353,17 +335,28 @@ namespace Agile_Project.Views.Forms
             cmbAssign.DataSource = null;
             cmbAssign.DataSource = projectPersons;
             cmbAssign.DisplayMember = "Name";
+            cmbAssign.ValueMember = "PersonId";
             RefreshAssignedList();
         }
 
         private void RefreshAssignedList()
         {
-            if (_existing == null) return;
             lstPersons.Items.Clear();
-            var report = _taskCtrl.GetTaskReport(_existing.TaskId);
-            foreach (var p in _projectCtrl.GetPersonsByProject(_story.ProjectId))
+
+            if (_existing != null)
             {
-                // Full implementation needs TaskController.GetAssignedPersons()
+                // Editing existing task: load from DB
+                var assigned = _taskCtrl.GetAssignedPersons(_existing.TaskId);
+                foreach (var p in assigned)
+                    lstPersons.Items.Add(p);
+                lstPersons.DisplayMember = "Name";
+            }
+            else
+            {
+                // New task: show staged persons
+                foreach (var kvp in _stagedPersons)
+                    lstPersons.Items.Add(new Person { PersonId = kvp.Key, Name = kvp.Value });
+                lstPersons.DisplayMember = "Name";
             }
         }
 
@@ -383,31 +376,52 @@ namespace Agile_Project.Views.Forms
 
             if (cmbState.Items.Count > 0)
                 cmbState.SelectedIndex = (int)_existing.State;
+
+            RefreshAssignedList();
         }
 
         // Event handlers
 
         private void BtnAssign_Click(object? s, EventArgs e)
         {
+            if (cmbAssign.SelectedItem is not Person p) return;
+
             if (_existing == null)
             {
-                MessageBox.Show("Save the task first before assigning persons.",
-                    "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
+                // New task: stage the person
+                if (_stagedPersons.ContainsKey(p.PersonId))
+                {
+                    MessageBox.Show($"{p.Name} is already in the list.",
+                        "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                _stagedPersons[p.PersonId] = p.Name;
+                RefreshAssignedList();
             }
-            if (cmbAssign.SelectedItem is Person p)
+            else
             {
+                // Existing task: persist immediately
                 var (ok, msg) = _taskCtrl.AssignPerson(_existing.TaskId, p.PersonId);
-                if (!ok) MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                else RefreshAssignedList();
+                if (!ok)
+                    MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else
+                    RefreshAssignedList();
             }
         }
 
         private void BtnRemovePerson_Click(object? s, EventArgs e)
         {
-            if (_existing == null || lstPersons.SelectedItem == null) return;
-            if (lstPersons.SelectedItem is Person p)
+            if (lstPersons.SelectedItem is not Person p) return;
+
+            if (_existing == null)
             {
+                // New task: remove from staged list
+                _stagedPersons.Remove(p.PersonId);
+                RefreshAssignedList();
+            }
+            else
+            {
+                // Existing task: remove from DB immediately
                 _taskCtrl.RemovePerson(_existing.TaskId, p.PersonId);
                 RefreshAssignedList();
             }
@@ -422,28 +436,42 @@ namespace Agile_Project.Views.Forms
                 return;
             }
 
+            var task = new ProjectTask
+            {
+                UserStoryId = _story.UserStoryId,
+                Title = txtTitle.Text.Trim(),
+                Priority = (int)numPriority.Value,
+                Difficulty = (int)numDifficulty.Value,
+                CategoryLabels = txtLabels.Text.Trim(),
+                PlannedTime = (float)numPlannedTime.Value,
+                ActualTime = (float)numActualTime.Value,
+                PlannedStartDate = chkPlannedStart.Checked ? dtpPlannedStart.Value : null,
+                PlannedEndDate = chkPlannedEnd.Checked ? dtpPlannedEnd.Value : null,
+                ActualStartDate = chkActualStart.Checked ? dtpActualStart.Value : null,
+                ActualEndDate = chkActualEnd.Checked ? dtpActualEnd.Value : null,
+                State = cmbState.Items.Count > 0
+                                       ? (TaskState)cmbState.SelectedIndex
+                                       : TaskState.ToBeDone
+            };
+
             if (_existing == null)
             {
-                bool ok = _taskCtrl.AddTask(_story.UserStoryId, txtTitle.Text.Trim(), (int)numPriority.Value);
-                if (!ok)
+                // Add new task with all fields + staged persons
+                var (newId, msg) = _taskCtrl.AddTaskFull(task, _stagedPersons.Keys.ToList());
+                if (newId == -1)
                 {
-                    MessageBox.Show("Could not add task. Story may be in Done state.",
-                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
             }
             else
             {
-                _taskCtrl.UpdatePriority(_existing.TaskId, (int)numPriority.Value);
-
-                if (cmbState.Items.Count > 0)
+                task.TaskId = _existing.TaskId;
+                var (ok, msg) = _taskCtrl.UpdateTask(task);
+                if (!ok)
                 {
-                    var newState = (TaskState)cmbState.SelectedIndex;
-                    if (newState != _existing.State)
-                    {
-                        var (ok, msg) = _taskCtrl.ChangeState(_existing.TaskId, newState);
-                        if (!ok) MessageBox.Show(msg, "State Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
             }
 

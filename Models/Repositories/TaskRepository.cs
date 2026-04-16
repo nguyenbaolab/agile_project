@@ -52,6 +52,57 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
+        public void Update(ProjectTask task)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(@"
+                UPDATE Tasks SET
+                    Title            = @Title,
+                    Priority         = @Priority,
+                    State            = @State,
+                    PlannedTime      = @PlannedTime,
+                    ActualTime       = @ActualTime,
+                    PlannedStartDate = @PlannedStartDate,
+                    PlannedEndDate   = @PlannedEndDate,
+                    ActualStartDate  = @ActualStartDate,
+                    ActualEndDate    = @ActualEndDate,
+                    Difficulty       = @Difficulty,
+                    CategoryLabels   = @CategoryLabels
+                WHERE TaskId = @TaskId", conn);
+            cmd.Parameters.AddWithValue("@Title", task.Title);
+            cmd.Parameters.AddWithValue("@Priority", task.Priority);
+            cmd.Parameters.AddWithValue("@State", task.State.ToString());
+            cmd.Parameters.AddWithValue("@PlannedTime", task.PlannedTime);
+            cmd.Parameters.AddWithValue("@ActualTime", task.ActualTime);
+            cmd.Parameters.AddWithValue("@PlannedStartDate", (object?)task.PlannedStartDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@PlannedEndDate", (object?)task.PlannedEndDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ActualStartDate", (object?)task.ActualStartDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ActualEndDate", (object?)task.ActualEndDate ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Difficulty", task.Difficulty);
+            cmd.Parameters.AddWithValue("@CategoryLabels", task.CategoryLabels);
+            cmd.Parameters.AddWithValue("@TaskId", task.TaskId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public int AddAndGetId(ProjectTask task)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(@"
+                INSERT INTO Tasks 
+                (Title, Priority, State, PlannedTime, ActualTime,
+                 PlannedStartDate, PlannedEndDate, ActualStartDate, ActualEndDate,
+                 Difficulty, CategoryLabels, UserStoryId)
+                VALUES 
+                (@Title, @Priority, @State, @PlannedTime, @ActualTime,
+                 @PlannedStartDate, @PlannedEndDate, @ActualStartDate, @ActualEndDate,
+                 @Difficulty, @CategoryLabels, @UserStoryId);
+                SELECT LAST_INSERT_ID();", conn);
+            MapToCommand(cmd, task);
+            return Convert.ToInt32(cmd.ExecuteScalar());
+        }
+
         public void UpdateState(int taskId, TaskState newState)
         {
             using var conn = DatabaseConnection.GetConnection();

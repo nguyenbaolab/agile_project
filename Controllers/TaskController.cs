@@ -3,8 +3,6 @@ using Agile_Project.Models.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Agile_Project.Controllers
 {
@@ -20,7 +18,6 @@ namespace Agile_Project.Controllers
 
             var story = _storyRepo.GetById(userStoryId);
             if (story == null) return false;
-
             if (story.State == UserStoryState.Done) return false;
 
             _taskRepo.Add(new ProjectTask
@@ -31,6 +28,44 @@ namespace Agile_Project.Controllers
                 State = TaskState.ToBeDone
             });
             return true;
+        }
+
+        public (int taskId, string message) AddTaskFull(ProjectTask task, List<int> personIds)
+        {
+            if (string.IsNullOrWhiteSpace(task.Title))
+                return (-1, "Title is required.");
+
+            var story = _storyRepo.GetById(task.UserStoryId);
+            if (story == null) return (-1, "User story not found.");
+            if (story.State == UserStoryState.Done) return (-1, "Story is already done.");
+
+            int newId = _taskRepo.AddAndGetId(task);
+
+            foreach (var pid in personIds)
+            {
+                var projectPersons = _personRepo.GetByProject(story.ProjectId);
+                if (projectPersons.Any(p => p.PersonId == pid))
+                    _taskRepo.AssignPerson(newId, pid);
+            }
+
+            return (newId, "Task added successfully.");
+        }
+
+        public (bool success, string message) UpdateTask(ProjectTask task)
+        {
+            var existing = _taskRepo.GetById(task.TaskId);
+            if (existing == null) return (false, "Task not found.");
+
+            // If state changed, go through the ChangeState validation rules
+            if (task.State != existing.State)
+            {
+                var (ok, msg) = ChangeState(task.TaskId, task.State);
+                if (!ok) return (false, msg);
+            }
+
+            // Persist all other fields
+            _taskRepo.Update(task);
+            return (true, "Task updated.");
         }
 
         public (bool success, string message) AssignPerson(int taskId, int personId)
@@ -117,14 +152,13 @@ namespace Agile_Project.Controllers
         }
 
         public List<ProjectTask> GetByUserStory(int userStoryId)
-        {
-            return _taskRepo.GetByUserStory(userStoryId);
-        }
+            => _taskRepo.GetByUserStory(userStoryId);
 
         public ProjectTask? GetById(int taskId)
-        {
-            return _taskRepo.GetById(taskId);
-        }
+            => _taskRepo.GetById(taskId);
+
+        public List<Person> GetAssignedPersons(int taskId)
+            => _taskRepo.GetAssignedPersons(taskId);
 
         private bool CanSetInProcess(UserStory story)
         {
@@ -136,11 +170,6 @@ namespace Agile_Project.Controllers
                     return false;
             }
             return true;
-        }
-
-        public List<Person> GetAssignedPersons(int taskId)
-        {
-            return _taskRepo.GetAssignedPersons(taskId);
         }
     }
 }
