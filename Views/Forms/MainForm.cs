@@ -38,6 +38,7 @@ namespace Agile_Project.Views.Forms
             Text = "Agile Project Manager";
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            MinimumSize = new Size(900, 600);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.FromArgb(245, 245, 243);
             Font = new Font("Segoe UI", 9f);
@@ -71,8 +72,7 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Top,
                 Height = 48,
                 BackColor = Color.FromArgb(250, 250, 249),
-                Padding = new Padding(0),
-                AutoSize = true,
+                Padding = new Padding(0)
             };
             topbar.Paint += (s, e) =>
             {
@@ -184,7 +184,8 @@ namespace Agile_Project.Views.Forms
                 ColumnCount = 3,
                 RowCount = 1,
                 Padding = new Padding(12),
-                BackColor = Color.FromArgb(245, 245, 243)
+                BackColor = Color.FromArgb(245, 245, 243),
+                AutoSize = true,
             };
             boardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
             boardPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
