@@ -11,7 +11,7 @@ namespace Agile_Project.Views.Console
 
         public void Run()
         {
-            // Login truoc khi vao menu 
+            // Login truoc khi vao menu //English translation: Login before entering the menu
             if (!new LoginUI(_projectController).Run()) return;
 
             while (true)
