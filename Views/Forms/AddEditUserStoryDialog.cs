@@ -28,7 +28,7 @@ namespace Agile_Project.Views.Forms
             MinimumSize = new Size(440, 420);
 
             FormBorderStyle = FormBorderStyle.Sizable;
-            MaximizeBox = false;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 10f);

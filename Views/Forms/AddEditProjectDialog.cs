@@ -21,8 +21,8 @@ namespace Agile_Project.Views.Forms
 
             Text = existing == null ? "New Project" : "Edit Project";
             AutoSize = false;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 10f);

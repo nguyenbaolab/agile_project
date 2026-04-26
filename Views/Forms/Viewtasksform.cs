@@ -51,9 +51,9 @@ namespace Agile_Project.Views.Forms
             Text = $"Tasks of: {storyTitle}";
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             MinimumSize = new Size(620, 720);
-            MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);

@@ -19,8 +19,8 @@ namespace Agile_Project.Views.Forms
             Text = "Login — Agile Project Manager";
             ClientSize = new Size(420, 320);
             MinimumSize = new Size(420, 320);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 10f);

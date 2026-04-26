@@ -29,6 +29,7 @@ namespace Agile_Project.Views.Forms
             Text = $"Reports — {project.Name}";
             Size = new Size(720, 560);
             FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);

@@ -25,8 +25,8 @@ namespace Agile_Project.Views.Forms
 
             Text = $"Manage Persons — {project.Name}";
             Size = new Size(500, 470);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.Sizable;
+            MaximizeBox = true;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9f);
