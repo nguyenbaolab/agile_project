@@ -158,7 +158,7 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Padding = new Padding(0)
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
             var cmbPanel = new FlowLayoutPanel
@@ -166,12 +166,15 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 BackColor = Color.FromArgb(250, 250, 249),
-                Padding = new Padding(6, 5, 6, 0)
+                Padding = new Padding(6, 5, 6, 5),
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
             };
             var cmbStories = new ComboBox
             {
                 Width = 320,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10f)
             };
             var allStories = _storyCtrl.GetByProject(_project.ProjectId);
             cmbStories.DataSource = allStories;
@@ -241,7 +244,7 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Padding = new Padding(0)
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
             var cmbPanel = new FlowLayoutPanel
@@ -249,12 +252,15 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 BackColor = Color.FromArgb(250, 250, 249),
-                Padding = new Padding(6, 5, 6, 0)
+                Padding = new Padding(6, 5, 6, 5),
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
             };
             var cmbPersons = new ComboBox
             {
                 Width = 260,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10f)
             };
             var allPersons = _projectCtrl.GetAllPersons();
             cmbPersons.DataSource = allPersons;
@@ -317,7 +323,7 @@ namespace Agile_Project.Views.Forms
                 RowCount = 2,
                 BackColor = Color.White
             };
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
             // Top bar: label + info
@@ -326,7 +332,9 @@ namespace Agile_Project.Views.Forms
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 BackColor = Color.FromArgb(250, 250, 249),
-                Padding = new Padding(8, 8, 8, 0)
+                Padding = new Padding(8, 8, 8, 8),
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
             };
             var lblInfo = new Label
             {

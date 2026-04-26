@@ -21,8 +21,8 @@ namespace Agile_Project.Views.Forms
         private readonly Dictionary<int, string> _stagedPersons = new();
 
         private TextBox txtTitle = new();
-        private NumericUpDown numPriority = new();
-        private NumericUpDown numDifficulty = new();
+        private ComboBox cboPriority = new();
+        private ComboBox cboDifficulty = new();
         private TextBox txtLabels = new();
         private NumericUpDown numPlannedTime = new();
         private NumericUpDown numActualTime = new();
@@ -94,7 +94,7 @@ namespace Agile_Project.Views.Forms
             layout.Controls.Add(txtTitle);
 
             // Priority + Difficulty
-            layout.Controls.Add(MakeLabel("Priority  /  Difficulty"));
+            layout.Controls.Add(MakeLabel("Priority *  /  Difficulty *"));
             var rowPriDiff = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -103,15 +103,27 @@ namespace Agile_Project.Views.Forms
                 BackColor = Color.White,
                 Margin = new Padding(0, 0, 0, 10)
             };
-            numPriority = MakeNum(0, 100);
-            numPriority.Margin = new Padding(0, 0, 50, 0);
-            numDifficulty = MakeNum(0, 10);
-            rowPriDiff.Controls.Add(numPriority);
-            rowPriDiff.Controls.Add(numDifficulty);
+            cboPriority = MakeLevelCombo();
+            cboPriority.Margin = new Padding(0, 0, 30, 0);
+            cboDifficulty = MakeLevelCombo();
+            rowPriDiff.Controls.Add(cboPriority);
+            rowPriDiff.Controls.Add(cboDifficulty);
             layout.Controls.Add(rowPriDiff);
 
             // Category Labels
             layout.Controls.Add(MakeLabel("Category labels (comma separated)"));
+            var lblLabelsHint = new Label
+            {
+                Text = "- could be the nature of work, related application component or layer, " +
+                       "or just some useful comment describing the task",
+                AutoSize = true,
+                MaximumSize = new Size(540, 0),
+                ForeColor = Color.FromArgb(130, 128, 122),
+                Font = new Font("Segoe UI", 8f),
+                Margin = new Padding(0, 0, 0, 4)
+            };
+            layout.Controls.Add(lblLabelsHint);
+
             txtLabels = new TextBox
             {
                 Dock = DockStyle.Fill,
@@ -177,7 +189,6 @@ namespace Agile_Project.Views.Forms
 
             layout.Controls.Add(rowDates);
 
-            // State — only visible for InSprint stories with permission
             if (_story.State == UserStoryState.InSprint && PermissionService.CanDo("ChangeTaskState"))
             {
                 layout.Controls.Add(MakeLabel("State"));
@@ -203,7 +214,6 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(sep);
 
-            // Assigned persons section — visible only if user has permission
             if (PermissionService.CanDo("AssignPerson"))
             {
                 layout.Controls.Add(MakeLabel("Assigned persons"));
@@ -331,7 +341,9 @@ namespace Agile_Project.Views.Forms
 
         private void LoadPersons()
         {
-            var projectPersons = _projectCtrl.GetPersonsByProject(_story.ProjectId);
+            var projectPersons = _projectCtrl.GetPersonsByProject(_story.ProjectId)
+                .Where(p => !string.Equals(p.ProfileRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             cmbAssign.DataSource = null;
             cmbAssign.DataSource = projectPersons;
             cmbAssign.DisplayMember = "Name";
@@ -363,8 +375,8 @@ namespace Agile_Project.Views.Forms
         private void FillData()
         {
             txtTitle.Text = _existing!.Title;
-            numPriority.Value = _existing.Priority;
-            numDifficulty.Value = _existing.Difficulty;
+            cboPriority.SelectedIndex = LevelToIndex(_existing.Priority);
+            cboDifficulty.SelectedIndex = LevelToIndex(_existing.Difficulty);
             txtLabels.Text = _existing.CategoryLabels;
             numPlannedTime.Value = (decimal)_existing.PlannedTime;
             numActualTime.Value = (decimal)_existing.ActualTime;
@@ -436,12 +448,46 @@ namespace Agile_Project.Views.Forms
                 return;
             }
 
+            if (cboPriority.SelectedIndex < 0)
+            {
+                MessageBox.Show("Priority is required. Please choose High, Medium or Low.",
+                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (cboDifficulty.SelectedIndex < 0)
+            {
+                MessageBox.Show("Difficulty is required. Please choose High, Medium or Low.",
+                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (chkPlannedStart.Checked && chkPlannedEnd.Checked &&
+                dtpPlannedEnd.Value.Date < dtpPlannedStart.Value.Date)
+            {
+                MessageBox.Show(
+                    "Logic inconsistent. Planned end cannot be before planned start. " +
+                    "Please select another planned end date.",
+                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (chkActualStart.Checked && chkActualEnd.Checked &&
+                dtpActualEnd.Value.Date < dtpActualStart.Value.Date)
+            {
+                MessageBox.Show(
+                    "Logic inconsistent. Actual end cannot be before actual start. " +
+                    "Please select another actual end date.",
+                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var task = new ProjectTask
             {
                 UserStoryId = _story.UserStoryId,
                 Title = txtTitle.Text.Trim(),
-                Priority = (int)numPriority.Value,
-                Difficulty = (int)numDifficulty.Value,
+                Priority = cboPriority.SelectedIndex + 1,
+                Difficulty = cboDifficulty.SelectedIndex + 1,
                 CategoryLabels = txtLabels.Text.Trim(),
                 PlannedTime = (float)numPlannedTime.Value,
                 ActualTime = (float)numActualTime.Value,
@@ -481,14 +527,28 @@ namespace Agile_Project.Views.Forms
 
         // Helpers
 
-        private NumericUpDown MakeNum(int min, int max) => new NumericUpDown
+        private static int LevelToIndex(int level) => level switch
         {
-            Width = 90,
-            Minimum = min,
-            Maximum = max,
-            BorderStyle = BorderStyle.FixedSingle,
-            Margin = new Padding(0)
+            1 => 0,
+            2 => 1,
+            3 => 2,
+            _ => -1
         };
+
+        private ComboBox MakeLevelCombo()
+        {
+            var cbo = new ComboBox
+            {
+                Width = 160,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0)
+            };
+            cbo.Items.Add("1 - High");
+            cbo.Items.Add("2 - Medium");
+            cbo.Items.Add("3 - Low");
+            return cbo;
+        }
 
         private NumericUpDown MakeDecimalNum() => new NumericUpDown
         {

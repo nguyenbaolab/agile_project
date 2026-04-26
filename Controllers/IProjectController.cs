@@ -15,7 +15,7 @@ namespace Agile_Project.Controllers
         bool RemovePersonFromProject(int projectId, int personId);
 
         List<Person> GetAllPersons();
-        bool AddPerson(string name, string role);
+        bool AddPerson(string name, string role, string profileRole = "Developer");
         (bool success, string message) DeletePerson(int personId);
 
         (bool success, string message) Login(string username, string password);

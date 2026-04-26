@@ -1,4 +1,6 @@
-﻿using Agile_Project.Controllers;
+﻿using System;
+using System.Linq;
+using Agile_Project.Controllers;
 using Agile_Project.Models.Entities;
 
 namespace Agile_Project.Views.Console
@@ -172,10 +174,12 @@ namespace Agile_Project.Views.Console
             var story = _storyController.GetById(task.UserStoryId);
             if (story == null) return;
 
-            var persons = _projectController.GetPersonsByProject(story.ProjectId);
+            var persons = _projectController.GetPersonsByProject(story.ProjectId)
+                .Where(p => !string.Equals(p.ProfileRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             if (persons.Count == 0)
             {
-                System.Console.WriteLine("No persons in this project.");
+                System.Console.WriteLine("No eligible persons in this project (Product Owner or Developer required).");
                 ConsoleUI.Pause();
                 return;
             }

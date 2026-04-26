@@ -349,7 +349,9 @@ namespace Agile_Project.Views.Forms
 
         private void LoadProjectPersons()
         {
-            var persons = _projectCtrl.GetPersonsByProject(_projectId);
+            var persons = _projectCtrl.GetPersonsByProject(_projectId)
+                .Where(p => !string.Equals(p.ProfileRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             cmbPersonAssign.DataSource = null;
             cmbPersonAssign.DataSource = persons;
             cmbPersonAssign.DisplayMember = "Name";
@@ -376,7 +378,6 @@ namespace Agile_Project.Views.Forms
             numPlannedTime.Value = (decimal)task.PlannedTime;
             numActualTime.Value = (decimal)task.ActualTime;
 
-            // Dates — uncheck first to avoid stale values
             chkPlannedStart.Checked = task.PlannedStartDate.HasValue;
             if (task.PlannedStartDate.HasValue) dtpPlannedStart.Value = task.PlannedStartDate.Value;
 

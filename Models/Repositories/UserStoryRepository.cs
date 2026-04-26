@@ -54,6 +54,21 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
+        public void Update(UserStory story)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(@"
+                UPDATE UserStories
+                SET Title=@Title, Description=@Description, Priority=@Priority
+                WHERE UserStoryId=@Id", conn);
+            cmd.Parameters.AddWithValue("@Title", story.Title);
+            cmd.Parameters.AddWithValue("@Description", story.Description);
+            cmd.Parameters.AddWithValue("@Priority", story.Priority);
+            cmd.Parameters.AddWithValue("@Id", story.UserStoryId);
+            cmd.ExecuteNonQuery();
+        }
+
         public void UpdateState(int storyId, UserStoryState newState)
         {
             using var conn = DatabaseConnection.GetConnection();

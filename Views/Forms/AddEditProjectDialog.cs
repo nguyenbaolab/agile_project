@@ -20,14 +20,15 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = existing == null ? "New Project" : "Edit Project";
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            AutoSize = false;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = Color.White;
-            Font = new Font("Segoe UI", 9f);
+            Font = new Font("Segoe UI", 10f);
             Padding = new Padding(16);
+            ClientSize = new Size(460, 360);
+            MinimumSize = new Size(460, 360);
 
             BuildUI();
             if (existing != null) FillData();
@@ -35,7 +36,6 @@ namespace Agile_Project.Views.Forms
 
         private void BuildUI()
         {
-            // Dung TableLayoutPanel de cac control tu xep thang hang, khong bi dinh
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -43,16 +43,16 @@ namespace Agile_Project.Views.Forms
                 RowCount = 5, // lblName, txtName, lblDesc, txtDesc, buttons
                 BackColor = Color.White,
                 Padding = new Padding(0),
-                AutoSize = true,
+                AutoSize = false
             };
 
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));        // label Name
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));    // txtName
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));        // label Desc
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80));    // txtDesc
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));    // buttons
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
 
-            // Label: Project name
+            // Project name
             var lblName = new Label
             {
                 Text = "Project name *",
@@ -62,7 +62,6 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(lblName, 0, 0);
 
-            // TextBox: Name
             txtName = new TextBox
             {
                 Dock = DockStyle.Fill,
@@ -71,7 +70,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtName, 0, 1);
 
-            // Label: Description
+            // Description
             var lblDesc = new Label
             {
                 Text = "Description",
@@ -81,45 +80,49 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(lblDesc, 0, 2);
 
-            // TextBox: Description
             txtDesc = new TextBox
             {
                 Dock = DockStyle.Fill,
                 Multiline = true,
+                ScrollBars = ScrollBars.Vertical,
+                MaxLength = 500,
                 BorderStyle = BorderStyle.FixedSingle,
+                MinimumSize = new Size(0, 110),
                 Margin = new Padding(0, 0, 0, 12)
             };
             layout.Controls.Add(txtDesc, 0, 3);
 
-            // Button row
             var btnPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.RightToLeft,
                 WrapContents = false,
                 BackColor = Color.White,
-                Margin = new Padding(0)
+                Margin = new Padding(0),
+                Padding = new Padding(0, 6, 0, 0)
             };
 
             var btnCancel = new Button
             {
                 Text = "Cancel",
-                AutoSize = true,
+                AutoSize = false,
+                Size = new Size(90, 34),
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
-                Margin = new Padding(6, 4, 0, 0),
+                Margin = new Padding(8, 0, 0, 0),
                 FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
             };
 
             var btnSave = new Button
             {
                 Text = "Save",
-                AutoSize = true,
+                AutoSize = false,
+                Size = new Size(90, 34),
                 DialogResult = DialogResult.None,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(83, 74, 183),
                 ForeColor = Color.White,
-                Margin = new Padding(6, 4, 0, 0),
+                Margin = new Padding(8, 0, 0, 0),
                 FlatAppearance = { BorderSize = 0 }
             };
             btnSave.Click += BtnSave_Click;

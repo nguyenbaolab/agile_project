@@ -21,6 +21,8 @@ namespace Agile_Project.Controllers
 
         public TaskController() : this(new TaskRepository(), new UserStoryRepository(), new PersonRepository()) { }
 
+        // Tasks
+
         public bool AddTask(int userStoryId, string title, int priority)
         {
             if (string.IsNullOrWhiteSpace(title)) return false;
@@ -77,6 +79,8 @@ namespace Agile_Project.Controllers
             return (true, "Task updated.");
         }
 
+        // Person assignment
+
         public (bool success, string message) AssignPerson(int taskId, int personId)
         {
             var task = _taskRepo.GetById(taskId);
@@ -86,8 +90,12 @@ namespace Agile_Project.Controllers
             if (story == null) return (false, "User story not found.");
 
             var projectPersons = _personRepo.GetByProject(story.ProjectId);
-            if (!projectPersons.Any(p => p.PersonId == personId))
+            var target = projectPersons.FirstOrDefault(p => p.PersonId == personId);
+            if (target == null)
                 return (false, "Person is not linked to this project.");
+
+            if (string.Equals(target.ProfileRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                return (false, "Admin users cannot be assigned to tasks. Choose a Product Owner or Developer.");
 
             _taskRepo.AssignPerson(taskId, personId);
             return (true, "Person assigned successfully.");
@@ -98,6 +106,8 @@ namespace Agile_Project.Controllers
             _taskRepo.RemovePerson(taskId, personId);
             return true;
         }
+
+        // Priority and state
 
         public bool UpdatePriority(int taskId, int priority)
         {
@@ -131,6 +141,8 @@ namespace Agile_Project.Controllers
             _taskRepo.UpdateState(taskId, newState);
             return (true, "State updated successfully.");
         }
+
+        // Reports and queries
 
         public string GetTaskReport(int taskId)
         {
@@ -168,6 +180,8 @@ namespace Agile_Project.Controllers
 
         public List<Person> GetAssignedPersons(int taskId)
             => _taskRepo.GetAssignedPersons(taskId);
+
+        // Helpers
 
         private bool CanSetInProcess(UserStory story)
         {

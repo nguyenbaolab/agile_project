@@ -359,7 +359,7 @@ namespace Agile_Project.Views.Forms
                 AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += lblTitle.Height + 6;
+            y += lblTitle.PreferredSize.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
             var lblMeta = new Label
@@ -372,7 +372,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
-            y += lblMeta.Height + 8;
+            y += lblMeta.PreferredSize.Height + 8;
 
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
@@ -436,7 +436,7 @@ namespace Agile_Project.Views.Forms
                 AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += lblTitle.Height + 6;
+            y += lblTitle.PreferredSize.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
 
@@ -458,7 +458,7 @@ namespace Agile_Project.Views.Forms
                         ? GetAssignedPersonNames(task.TaskId) : "";
                     var taskRow = MakeTaskRow(task, story, assignedPersons, cardW, ref y);
                     card.Controls.Add(taskRow);
-                    y += taskRow.Height + 4;
+                    y += taskRow.Height + 6;
                 }
 
                 var sep2 = new Panel
@@ -533,7 +533,7 @@ namespace Agile_Project.Views.Forms
                 AutoSize = true
             };
             card.Controls.Add(lblTitle);
-            y += lblTitle.Height + 6;
+            y += lblTitle.PreferredSize.Height + 6;
 
             var tasks = _taskCtrl.GetByUserStory(story.UserStoryId);
             int doneTasks = tasks.Count(t => t.State == TaskState.Done);
@@ -548,7 +548,7 @@ namespace Agile_Project.Views.Forms
                 Font = new Font("Segoe UI", 8f)
             };
             card.Controls.Add(lblMeta);
-            y += lblMeta.Height + 8;
+            y += lblMeta.PreferredSize.Height + 8;
 
             int btnX = 10;
             if (PermissionService.CanDo("ManageUserStory"))
@@ -595,11 +595,18 @@ namespace Agile_Project.Views.Forms
 
         private Panel MakeTaskRow(ProjectTask task, UserStory story, string persons, int cardWidth, ref int y)
         {
+            int rowWidth = cardWidth - 20;
+
+            var taskFont = new Font("Segoe UI", 9f);
+            var personFont = new Font("Segoe UI", 8f);
+            int textH = TextRenderer.MeasureText("Wgy", taskFont).Height;
+            int rowH = Math.Max(textH + 10, 30);
+
             var row = new Panel
             {
                 Location = new Point(10, y),
-                Width = cardWidth - 20,
-                Height = 22
+                Width = rowWidth,
+                Height = rowH
             };
 
             Color dotColor = task.State switch
@@ -612,10 +619,9 @@ namespace Agile_Project.Views.Forms
             var dot = new Panel
             {
                 Size = new Size(15, 15),
-                Location = new Point(0, 4),
+                Location = new Point(0, (rowH - 15) / 2),
                 BackColor = dotColor
             };
-            // MakeRound(dot);
 
             if (PermissionService.CanDo("ChangeTaskState"))
             {
@@ -626,22 +632,25 @@ namespace Agile_Project.Views.Forms
 
             var lblTask = new Label
             {
+                AutoSize = false,
                 Text = task.Title,
-                Location = new Point(16, 3),
-                Width = row.Width - 70,
-                Height = 18,
-                Font = new Font("Segoe UI", 8f),
-                ForeColor = Color.FromArgb(60, 60, 58)
+                Location = new Point(20, 0),
+                Width = rowWidth - 80,
+                Height = rowH,
+                Font = taskFont,
+                ForeColor = Color.FromArgb(60, 60, 58),
+                TextAlign = ContentAlignment.MiddleLeft
             };
             row.Controls.Add(lblTask);
 
             var lblPerson = new Label
             {
+                AutoSize = false,
                 Text = persons,
-                Location = new Point(row.Width - 52, 3),
-                Width = 50,
-                Height = 18,
-                Font = new Font("Segoe UI", 7.5f),
+                Location = new Point(rowWidth - 60, 0),
+                Width = 56,
+                Height = rowH,
+                Font = personFont,
                 ForeColor = Color.FromArgb(130, 128, 122),
                 TextAlign = ContentAlignment.MiddleRight
             };
@@ -649,14 +658,15 @@ namespace Agile_Project.Views.Forms
 
             var btnDetail = new Label
             {
+                AutoSize = false,
                 Text = "...",
-                Location = new Point(row.Width - 18, 2),
-                Width = 18,
-                Height = 18,
+                Location = new Point(rowWidth - 22, 0),
+                Width = 22,
+                Height = rowH,
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = Color.FromArgb(150, 148, 140),
                 Cursor = Cursors.Hand,
-                Font = new Font("Segoe UI", 8f)
+                Font = new Font("Segoe UI", 9f)
             };
             btnDetail.Click += (s, e) => OpenTaskDetail(task, story);
             row.Controls.Add(btnDetail);

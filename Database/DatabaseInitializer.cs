@@ -17,6 +17,30 @@ namespace Agile_Project.Database
             AddAuthColumns();
             SeedDefaultAccounts();
             UpdateSystemAccountFlags();
+            NormalizeLegacyPriorities();
+        }
+
+        private static void NormalizeLegacyPriorities()
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            var statements = new[]
+            {
+                "UPDATE UserStories SET Priority = 3 WHERE Priority IS NULL OR Priority NOT IN (1,2,3)",
+                "UPDATE Tasks SET Priority = 3 WHERE Priority IS NULL OR Priority NOT IN (1,2,3)",
+                "UPDATE Tasks SET Difficulty = 3 WHERE Difficulty IS NULL OR Difficulty NOT IN (1,2,3)"
+            };
+
+            foreach (var sql in statements)
+            {
+                try
+                {
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                }
+                catch { }
+            }
         }
 
         private static void CreateDatabaseIfNotExists()

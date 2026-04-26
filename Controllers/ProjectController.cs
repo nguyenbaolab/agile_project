@@ -14,15 +14,15 @@ namespace Agile_Project.Controllers
         private readonly IProjectRepository _projectRepo;
         private readonly IPersonRepository _personRepo;
 
-        // Constructor used by tests / advanced callers — dependencies are injected
         public ProjectController(IProjectRepository projectRepo, IPersonRepository personRepo)
         {
             _projectRepo = projectRepo;
             _personRepo = personRepo;
         }
 
-        // Convenience constructor — uses the real MySQL-backed repositories
         public ProjectController() : this(new ProjectRepository(), new PersonRepository()) { }
+
+        // Projects
 
         public List<Project> GetAllProjects()
         {
@@ -52,6 +52,8 @@ namespace Agile_Project.Controllers
             _projectRepo.Delete(projectId);
         }
 
+        // Project members
+
         public List<Person> GetPersonsByProject(int projectId)
         {
             return _personRepo.GetByProject(projectId);
@@ -69,15 +71,22 @@ namespace Agile_Project.Controllers
             return true;
         }
 
+        // Persons
+
         public List<Person> GetAllPersons()
         {
             return _personRepo.GetAll();
         }
 
-        public bool AddPerson(string name, string role)
+        public bool AddPerson(string name, string role, string profileRole = "Developer")
         {
             if (string.IsNullOrWhiteSpace(name)) return false;
-            _personRepo.Add(new Person { Name = name, Role = role });
+
+            var allowedProfiles = new[] { "Admin", "ProductOwner", "Developer" };
+            if (!allowedProfiles.Contains(profileRole))
+                profileRole = "Developer";
+
+            _personRepo.Add(new Person { Name = name, Role = role, ProfileRole = profileRole });
             return true;
         }
 

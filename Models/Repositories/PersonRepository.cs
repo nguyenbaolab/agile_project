@@ -19,12 +19,7 @@ namespace Agile_Project.Models.Repositories
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                list.Add(new Person
-                {
-                    PersonId = Convert.ToInt32(reader["PersonId"]),
-                    Name = reader["Name"].ToString()!,
-                    Role = reader["Role"].ToString()!
-                });
+                list.Add(MapFromReader(reader));
             }
             return list;
         }
@@ -42,12 +37,7 @@ namespace Agile_Project.Models.Repositories
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                list.Add(new Person
-                {
-                    PersonId = Convert.ToInt32(reader["PersonId"]),
-                    Name = reader["Name"].ToString()!,
-                    Role = reader["Role"].ToString()!
-                });
+                list.Add(MapFromReader(reader));
             }
             return list;
         }
@@ -57,9 +47,11 @@ namespace Agile_Project.Models.Repositories
             using var conn = DatabaseConnection.GetConnection();
             conn.Open();
             var cmd = new MySqlCommand(
-                "INSERT INTO Persons (Name, Role) VALUES (@Name, @Role)", conn);
+                "INSERT INTO Persons (Name, Role, ProfileRole) VALUES (@Name, @Role, @ProfileRole)", conn);
             cmd.Parameters.AddWithValue("@Name", person.Name);
             cmd.Parameters.AddWithValue("@Role", person.Role);
+            cmd.Parameters.AddWithValue("@ProfileRole",
+                string.IsNullOrWhiteSpace(person.ProfileRole) ? "Developer" : person.ProfileRole);
             cmd.ExecuteNonQuery();
         }
 

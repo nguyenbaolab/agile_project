@@ -16,6 +16,7 @@ namespace Agile_Project.Views.Forms
         private ListBox lstAllPersons = new();
         private TextBox txtName = new();
         private TextBox txtRole = new();
+        private ComboBox cboProfile = new();
 
         public ManagePersonsDialog(Project project, IProjectController ctrl)
         {
@@ -23,7 +24,7 @@ namespace Agile_Project.Views.Forms
             _ctrl = ctrl;
 
             Text = $"Manage Persons — {project.Name}";
-            Size = new Size(500, 410);
+            Size = new Size(500, 470);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
@@ -59,9 +60,11 @@ namespace Agile_Project.Views.Forms
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 5,
+                RowCount = 7,
                 BackColor = Color.White
             };
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -78,7 +81,7 @@ namespace Agile_Project.Views.Forms
             };
             layout.Controls.Add(txtName, 0, 1);
 
-            layout.Controls.Add(MakeLabel("Role"), 0, 2);
+            layout.Controls.Add(MakeLabel("Role *"), 0, 2);
 
             txtRole = new TextBox
             {
@@ -87,6 +90,21 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(0, 0, 0, 10)
             };
             layout.Controls.Add(txtRole, 0, 3);
+
+            layout.Controls.Add(MakeLabel("Profile *"), 0, 4);
+
+            cboProfile = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 0, 0, 10)
+            };
+            cboProfile.Items.Add("Admin");
+            cboProfile.Items.Add("Product Owner");
+            cboProfile.Items.Add("Developer");
+            cboProfile.SelectedIndex = 2;
+            layout.Controls.Add(cboProfile, 0, 5);
 
             var btnRow = new FlowLayoutPanel
             {
@@ -109,7 +127,7 @@ namespace Agile_Project.Views.Forms
             };
             btnAdd.Click += BtnAddPerson_Click;
             btnRow.Controls.Add(btnAdd);
-            layout.Controls.Add(btnRow, 0, 4);
+            layout.Controls.Add(btnRow, 0, 6);
 
             tp.Controls.Add(layout);
             return tp;
@@ -267,7 +285,28 @@ namespace Agile_Project.Views.Forms
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            bool ok = _ctrl.AddPerson(txtName.Text.Trim(), txtRole.Text.Trim());
+            if (string.IsNullOrWhiteSpace(txtRole.Text))
+            {
+                MessageBox.Show("Role is required.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (cboProfile.SelectedIndex < 0)
+            {
+                MessageBox.Show("Profile is required. Please choose Admin, Product Owner or Developer.",
+                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string profile = cboProfile.SelectedIndex switch
+            {
+                0 => "Admin",
+                1 => "ProductOwner",
+                2 => "Developer",
+                _ => "Developer"
+            };
+
+            bool ok = _ctrl.AddPerson(txtName.Text.Trim(), txtRole.Text.Trim(), profile);
             if (ok)
             {
                 var all = _ctrl.GetAllPersons();
@@ -278,6 +317,7 @@ namespace Agile_Project.Views.Forms
                 }
                 txtName.Clear();
                 txtRole.Clear();
+                cboProfile.SelectedIndex = 2;
                 RefreshLists();
             }
         }

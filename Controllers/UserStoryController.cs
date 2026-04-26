@@ -21,9 +21,14 @@ namespace Agile_Project.Controllers
 
         public UserStoryController() : this(new UserStoryRepository(), new TaskRepository()) { }
 
+        // User story CRUD
+
         public bool AddUserStory(int projectId, string title, string description, int priority)
         {
             if (string.IsNullOrWhiteSpace(title)) return false;
+            if (priority < 1 || priority > 3) return false;
+
+            description = ClampDescription(description);
 
             _storyRepo.Add(new UserStory
             {
@@ -36,10 +41,34 @@ namespace Agile_Project.Controllers
             return true;
         }
 
+        public bool UpdateUserStory(int storyId, string title, string description, int priority)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return false;
+            if (priority < 1 || priority > 3) return false;
+
+            var existing = _storyRepo.GetById(storyId);
+            if (existing == null) return false;
+
+            existing.Title = title;
+            existing.Description = ClampDescription(description);
+            existing.Priority = priority;
+
+            _storyRepo.Update(existing);
+            return true;
+        }
+
+        private static string ClampDescription(string description)
+        {
+            if (string.IsNullOrEmpty(description)) return description ?? string.Empty;
+            return description.Length > 300 ? description.Substring(0, 300) : description;
+        }
+
         public void DeleteUserStory(int storyId)
         {
             _storyRepo.Delete(storyId);
         }
+
+        // State machine
 
         public (bool success, string message) ChangeState(int storyId, UserStoryState newState)
         {
@@ -69,6 +98,8 @@ namespace Agile_Project.Controllers
             return (true, "State updated successfully.");
         }
 
+        // Queries
+
         public List<UserStory> GetByProject(int projectId)
         {
             return _storyRepo.GetByProject(projectId);
@@ -78,6 +109,8 @@ namespace Agile_Project.Controllers
         {
             return _storyRepo.GetById(storyId);
         }
+
+        // Helpers
 
         private bool CanMoveToSprint(UserStory story)
         {
