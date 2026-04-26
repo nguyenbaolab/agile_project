@@ -13,12 +13,12 @@ namespace Agile_Project.Views.Forms
     {
         private readonly Project _project;
         private readonly UserStory? _focusStory;
-        private readonly UserStoryController _storyCtrl;
-        private readonly TaskController _taskCtrl;
-        private readonly ProjectController _projectCtrl;
+        private readonly IUserStoryController _storyCtrl;
+        private readonly ITaskController _taskCtrl;
+        private readonly IProjectController _projectCtrl;
 
         public ReportsForm(Project project, UserStory? focusStory,
-            UserStoryController storyCtrl, TaskController taskCtrl, ProjectController projectCtrl)
+            IUserStoryController storyCtrl, ITaskController taskCtrl, IProjectController projectCtrl)
         {
             _project = project;
             _focusStory = focusStory;

@@ -9,10 +9,20 @@ using System.Threading.Tasks;
 
 namespace Agile_Project.Controllers
 {
-    public class ProjectController
+    public class ProjectController : IProjectController
     {
-        private readonly ProjectRepository _projectRepo = new();
-        private readonly PersonRepository _personRepo = new();
+        private readonly IProjectRepository _projectRepo;
+        private readonly IPersonRepository _personRepo;
+
+        // Constructor used by tests / advanced callers — dependencies are injected
+        public ProjectController(IProjectRepository projectRepo, IPersonRepository personRepo)
+        {
+            _projectRepo = projectRepo;
+            _personRepo = personRepo;
+        }
+
+        // Convenience constructor — uses the real MySQL-backed repositories
+        public ProjectController() : this(new ProjectRepository(), new PersonRepository()) { }
 
         public List<Project> GetAllProjects()
         {

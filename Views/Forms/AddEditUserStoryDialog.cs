@@ -8,7 +8,7 @@ namespace Agile_Project.Views.Forms
 {
     public class AddEditUserStoryDialog : Form
     {
-        private readonly UserStoryController _ctrl;
+        private readonly IUserStoryController _ctrl;
         private readonly UserStory? _existing;
         private readonly int _projectId;
 
@@ -16,7 +16,7 @@ namespace Agile_Project.Views.Forms
         private TextBox txtDesc = new();
         private NumericUpDown numPriority = new();
 
-        public AddEditUserStoryDialog(UserStory? existing, int projectId, UserStoryController ctrl)
+        public AddEditUserStoryDialog(UserStory? existing, int projectId, IUserStoryController ctrl)
         {
             _existing = existing;
             _projectId = projectId;

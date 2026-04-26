@@ -7,12 +7,12 @@ namespace Agile_Project.Views.Forms
 {
     public class LoginForm : Form
     {
-        private readonly ProjectController _ctrl;
+        private readonly IProjectController _ctrl;
         private TextBox txtUsername = new();
         private TextBox txtPassword = new();
         private Label lblError = new();
 
-        public LoginForm(ProjectController ctrl)
+        public LoginForm(IProjectController ctrl)
         {
             _ctrl = ctrl;
 

@@ -8,13 +8,13 @@ namespace Agile_Project.Views.Forms
 {
     public class AddEditProjectDialog : Form
     {
-        private readonly ProjectController _ctrl;
+        private readonly IProjectController _ctrl;
         private readonly Project? _existing;
 
         private TextBox txtName = new();
         private TextBox txtDesc = new();
 
-        public AddEditProjectDialog(Project? existing, ProjectController ctrl)
+        public AddEditProjectDialog(Project? existing, IProjectController ctrl)
         {
             _existing = existing;
             _ctrl = ctrl;

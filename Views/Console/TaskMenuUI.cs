@@ -5,12 +5,12 @@ namespace Agile_Project.Views.Console
 {
     public class TaskMenuUI
     {
-        private readonly ProjectController _projectController;
-        private readonly UserStoryController _storyController;
-        private readonly TaskController _taskController;
+        private readonly IProjectController _projectController;
+        private readonly IUserStoryController _storyController;
+        private readonly ITaskController _taskController;
 
-        public TaskMenuUI(ProjectController projectController,
-            UserStoryController storyController, TaskController taskController)
+        public TaskMenuUI(IProjectController projectController,
+            IUserStoryController storyController, ITaskController taskController)
         {
             _projectController = projectController;
             _storyController = storyController;

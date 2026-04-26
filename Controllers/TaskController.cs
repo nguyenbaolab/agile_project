@@ -6,11 +6,20 @@ using System.Linq;
 
 namespace Agile_Project.Controllers
 {
-    public class TaskController
+    public class TaskController : ITaskController
     {
-        private readonly TaskRepository _taskRepo = new();
-        private readonly UserStoryRepository _storyRepo = new();
-        private readonly PersonRepository _personRepo = new();
+        private readonly ITaskRepository _taskRepo;
+        private readonly IUserStoryRepository _storyRepo;
+        private readonly IPersonRepository _personRepo;
+
+        public TaskController(ITaskRepository taskRepo, IUserStoryRepository storyRepo, IPersonRepository personRepo)
+        {
+            _taskRepo = taskRepo;
+            _storyRepo = storyRepo;
+            _personRepo = personRepo;
+        }
+
+        public TaskController() : this(new TaskRepository(), new UserStoryRepository(), new PersonRepository()) { }
 
         public bool AddTask(int userStoryId, string title, int priority)
         {

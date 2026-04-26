@@ -12,8 +12,8 @@ namespace Agile_Project.Views.Forms
     public class ViewTasksForm : Form
     {
         private readonly int _userStoryId;
-        private readonly TaskController _taskCtrl;
-        private readonly ProjectController _projectCtrl;
+        private readonly ITaskController _taskCtrl;
+        private readonly IProjectController _projectCtrl;
         private readonly int _projectId;
 
         // Controls
@@ -41,7 +41,7 @@ namespace Agile_Project.Views.Forms
         private ProjectTask? _currentTask;
 
         public ViewTasksForm(int userStoryId, string storyTitle,
-            TaskController taskCtrl, ProjectController projectCtrl, int projectId)
+            ITaskController taskCtrl, IProjectController projectCtrl, int projectId)
         {
             _userStoryId = userStoryId;
             _taskCtrl = taskCtrl;

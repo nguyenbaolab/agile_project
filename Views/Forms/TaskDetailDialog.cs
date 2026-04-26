@@ -11,8 +11,8 @@ namespace Agile_Project.Views.Forms
 {
     public class TaskDetailDialog : Form
     {
-        private readonly TaskController _taskCtrl;
-        private readonly ProjectController _projectCtrl;
+        private readonly ITaskController _taskCtrl;
+        private readonly IProjectController _projectCtrl;
         private readonly UserStory _story;
         private readonly ProjectTask? _existing;
 
@@ -39,7 +39,7 @@ namespace Agile_Project.Views.Forms
         private ComboBox cmbAssign = new();
 
         public TaskDetailDialog(UserStory story, ProjectTask? existing,
-            ProjectController projectCtrl, TaskController taskCtrl)
+            IProjectController projectCtrl, ITaskController taskCtrl)
         {
             _story = story;
             _existing = existing;

@@ -4,9 +4,9 @@ namespace Agile_Project.Views.Console
 {
     public class ProjectMenuUI
     {
-        private readonly ProjectController _controller;
+        private readonly IProjectController _controller;
 
-        public ProjectMenuUI(ProjectController controller)
+        public ProjectMenuUI(IProjectController controller)
         {
             _controller = controller;
         }

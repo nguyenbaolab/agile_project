@@ -5,9 +5,9 @@ namespace Agile_Project.Views.Console
 {
     public class ConsoleUI
     {
-        private readonly ProjectController _projectController = new();
-        private readonly UserStoryController _userStoryController = new();
-        private readonly TaskController _taskController = new();
+        private readonly IProjectController _projectController = new ProjectController();
+        private readonly IUserStoryController _userStoryController = new UserStoryController();
+        private readonly ITaskController _taskController = new TaskController();
 
         public void Run()
         {

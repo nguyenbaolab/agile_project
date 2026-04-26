@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Agile_Project.Models.Repositories
 {
-    public class TaskRepository
+    public class TaskRepository : ITaskRepository
     {
         public List<ProjectTask> GetByUserStory(int userStoryId)
         {

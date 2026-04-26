@@ -9,7 +9,7 @@ namespace Agile_Project.Views.Forms
 {
     public class ManagePersonsDialog : Form
     {
-        private readonly ProjectController _ctrl;
+        private readonly IProjectController _ctrl;
         private readonly Project _project;
 
         private ListBox lstProjectPersons = new();
@@ -17,7 +17,7 @@ namespace Agile_Project.Views.Forms
         private TextBox txtName = new();
         private TextBox txtRole = new();
 
-        public ManagePersonsDialog(Project project, ProjectController ctrl)
+        public ManagePersonsDialog(Project project, IProjectController ctrl)
         {
             _project = project;
             _ctrl = ctrl;

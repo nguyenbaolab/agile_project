@@ -5,10 +5,10 @@ namespace Agile_Project.Views.Console
 {
     public class UserStoryMenuUI
     {
-        private readonly ProjectController _projectController;
-        private readonly UserStoryController _storyController;
+        private readonly IProjectController _projectController;
+        private readonly IUserStoryController _storyController;
 
-        public UserStoryMenuUI(ProjectController projectController, UserStoryController storyController)
+        public UserStoryMenuUI(IProjectController projectController, IUserStoryController storyController)
         {
             _projectController = projectController;
             _storyController = storyController;

@@ -8,10 +8,18 @@ using System.Threading.Tasks;
 
 namespace Agile_Project.Controllers
 {
-    public class UserStoryController
+    public class UserStoryController : IUserStoryController
     {
-        private readonly UserStoryRepository _storyRepo = new();
-        private readonly TaskRepository _taskRepo = new();
+        private readonly IUserStoryRepository _storyRepo;
+        private readonly ITaskRepository _taskRepo;
+
+        public UserStoryController(IUserStoryRepository storyRepo, ITaskRepository taskRepo)
+        {
+            _storyRepo = storyRepo;
+            _taskRepo = taskRepo;
+        }
+
+        public UserStoryController() : this(new UserStoryRepository(), new TaskRepository()) { }
 
         public bool AddUserStory(int projectId, string title, string description, int priority)
         {

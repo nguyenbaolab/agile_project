@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Agile_Project.Models.Repositories
 {
-    public class ProjectRepository
+    public class ProjectRepository : IProjectRepository
     {
         public List<Project> GetAll()
         {

@@ -10,9 +10,9 @@ namespace Agile_Project.Views.Forms
 {
     public partial class MainForm : Form
     {
-        private readonly ProjectController _projectCtrl = new();
-        private readonly UserStoryController _storyCtrl = new();
-        private readonly TaskController _taskCtrl = new();
+        private readonly IProjectController _projectCtrl = new ProjectController();
+        private readonly IUserStoryController _storyCtrl = new UserStoryController();
+        private readonly ITaskController _taskCtrl = new TaskController();
 
         private List<Project> _projects = new();
         private Project? _selectedProject;

@@ -5,9 +5,9 @@ namespace Agile_Project.Views.Console
 {
     public class LoginUI
     {
-        private readonly ProjectController _controller;
+        private readonly IProjectController _controller;
 
-        public LoginUI(ProjectController controller)
+        public LoginUI(IProjectController controller)
         {
             _controller = controller;
         }
