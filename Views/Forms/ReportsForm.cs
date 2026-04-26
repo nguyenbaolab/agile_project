@@ -417,7 +417,7 @@ namespace Agile_Project.Views.Forms
 
         private void PopulateBurndown(Series idealSeries, Series actualSeries, Label lblInfo)
         {
-            // Lấy tất cả tasks của stories đang InSprint
+            // Lấy tất cả tasks của stories đang InSprint //Take all the tasks of stories that r currently InSprint
             var sprintStories = _storyCtrl.GetByProject(_project.ProjectId)
                 .Where(s => s.State == UserStoryState.InSprint).ToList();
 
@@ -432,9 +432,9 @@ namespace Agile_Project.Views.Forms
                 return;
             }
 
-            // Xác định date range:
-            // Start = PlannedStartDate sớm nhất (fallback: hôm nay - 7 ngày)
-            // End   = PlannedEndDate muộn nhất   (fallback: hôm nay + 7 ngày)
+            // Xác định date range: //define date range
+            // Start = PlannedStartDate sớm nhất (fallback: hôm nay - 7 ngày) //Start = PlannedStartDate the earliest (fallback: today - 7 days)
+            // End   = PlannedEndDate muộn nhất   (fallback: hôm nay + 7 ngày) //End = PlannedEndDate the latest (fallback: today + 7 days)
             var tasksWithStart = allTasks.Where(t => t.PlannedStartDate.HasValue).ToList();
             var tasksWithEnd = allTasks.Where(t => t.PlannedEndDate.HasValue).ToList();
 
@@ -446,9 +446,9 @@ namespace Agile_Project.Views.Forms
                 ? tasksWithEnd.Max(t => t.PlannedEndDate!.Value.Date)
                 : DateTime.Today.AddDays(7);
 
-            // Đảm bảo endDate >= hôm nay để chart không bị cụt
+            // Đảm bảo endDate >= hôm nay để chart không bị cụt //Ensure endDate >= today to prevent the chart from being truncated
             if (endDate < DateTime.Today) endDate = DateTime.Today;
-            // Đảm bảo range hợp lệ
+            // Đảm bảo range hợp lệ //Ensure the range is valid
             if (endDate <= startDate) endDate = startDate.AddDays(1);
 
             int totalTasks = allTasks.Count;
@@ -456,18 +456,18 @@ namespace Agile_Project.Views.Forms
 
             lblInfo.Text = $"Sprint burndown  |  {totalTasks} tasks  |  {startDate:dd/MM} → {endDate:dd/MM}";
 
-            // ── Ideal line: từ totalTasks → 0 theo đường thẳng ────────
+            // ── Ideal line: từ totalTasks → 0 theo đường thẳng ──────── //Ideal line: from totalTasks to 0 along the straight line
             idealSeries.Points.AddXY(startDate.ToOADate(), totalTasks);
             idealSeries.Points.AddXY(endDate.ToOADate(), 0);
 
-            // ── Actual line: mỗi ngày đếm số tasks CHƯA done ──────────
-            // Logic: task được coi là "done vào ngày D" nếu ActualEndDate == D
-            // Số tasks remaining vào ngày D = tổng tasks - số tasks có ActualEndDate <= D
+            // ── Actual line: mỗi ngày đếm số tasks CHƯA done ────────── //Actual line: count the number of tasks that are not done each day
+            // Logic: task được coi là "done vào ngày D" nếu ActualEndDate == D //Logic: a task is considered "done on day D" if ActualEndDate == D
+            // Số tasks remaining vào ngày D = tổng tasks - số tasks có ActualEndDate <= D //The number of tasks remaining on day D = total tasks - the number of tasks with ActualEndDate <= D
             for (int i = 0; i <= totalDays; i++)
             {
                 var day = startDate.AddDays(i);
 
-                // Chỉ vẽ actual đến hôm nay (tương lai chưa có dữ liệu)
+                // Chỉ vẽ actual đến hôm nay (tương lai chưa có dữ liệu) //Only draw actual up to today (future data not available)
                 if (day > DateTime.Today) break;
 
                 int completedByDay = allTasks.Count(t =>
@@ -477,7 +477,7 @@ namespace Agile_Project.Views.Forms
                 actualSeries.Points.AddXY(day.ToOADate(), remaining);
             }
 
-            // Nếu không có task nào có ActualEndDate → chỉ hiện điểm đầu
+            // Nếu không có task nào có ActualEndDate → chỉ hiện điểm đầu //If there are no tasks with ActualEndDate → only show the first point
             if (actualSeries.Points.Count == 0)
                 actualSeries.Points.AddXY(startDate.ToOADate(), totalTasks);
         }
