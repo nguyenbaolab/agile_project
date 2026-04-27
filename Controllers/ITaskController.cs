@@ -9,6 +9,7 @@ namespace Agile_Project.Controllers
         bool AddTask(int userStoryId, string title, int priority);
         (int taskId, string message) AddTaskFull(ProjectTask task, List<int> personIds);
         (bool success, string message) UpdateTask(ProjectTask task);
+        (bool success, string message) DeleteTask(int taskId);
 
         (bool success, string message) AssignPerson(int taskId, int personId);
         bool RemovePerson(int taskId, int personId);

@@ -9,6 +9,7 @@ namespace Agile_Project.Models.Repositories
         ProjectTask? GetById(int taskId);
         void Add(ProjectTask task);
         void Update(ProjectTask task);
+        void Delete(int taskId);
         int AddAndGetId(ProjectTask task);
         void UpdateState(int taskId, TaskState newState);
         void UpdatePriority(int taskId, int priority);

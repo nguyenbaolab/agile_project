@@ -79,6 +79,23 @@ namespace Agile_Project.Controllers
             return (true, "Task updated.");
         }
 
+        public (bool success, string message) DeleteTask(int taskId)
+        {
+            var task = _taskRepo.GetById(taskId);
+            if (task == null) return (false, "Task not found.");
+
+            var story = _storyRepo.GetById(task.UserStoryId);
+            if (story == null) return (false, "User story not found.");
+
+            if (story.State == UserStoryState.Done)
+                return (false, "Cannot delete a task whose user story is Done.");
+            if (task.State == TaskState.Done)
+                return (false, "Cannot delete a task that is already Done.");
+
+            _taskRepo.Delete(taskId);
+            return (true, "Task deleted.");
+        }
+
         // Person assignment
 
         public (bool success, string message) AssignPerson(int taskId, int personId)

@@ -600,7 +600,7 @@ namespace Agile_Project.Views.Forms
             var taskFont = new Font("Segoe UI", 9f);
             var personFont = new Font("Segoe UI", 8f);
             int textH = TextRenderer.MeasureText("Wgy", taskFont).Height;
-            int rowH = Math.Max(textH + 10, 30);
+            int rowH = Math.Max(textH + 12, 32);
 
             var row = new Panel
             {
@@ -630,12 +630,20 @@ namespace Agile_Project.Views.Forms
             }
             row.Controls.Add(dot);
 
+            bool canDelete = PermissionService.CanDo("AddTask");
+            int delBtnW = 60;
+            int delBtnH = 24;
+            int detailW = 22;
+            int gap = 6;
+
+            int rightReserve = canDelete ? (detailW + gap + delBtnW + gap) : (detailW + gap + 56);
+
             var lblTask = new Label
             {
                 AutoSize = false,
                 Text = task.Title,
                 Location = new Point(20, 0),
-                Width = rowWidth - 80,
+                Width = rowWidth - 20 - rightReserve,
                 Height = rowH,
                 Font = taskFont,
                 ForeColor = Color.FromArgb(60, 60, 58),
@@ -643,12 +651,16 @@ namespace Agile_Project.Views.Forms
             };
             row.Controls.Add(lblTask);
 
+            int delBtnX = rowWidth - detailW - gap - delBtnW;
+            int personW = canDelete ? 56 : 56;
+            int personX = canDelete ? (delBtnX - personW - 4) : (rowWidth - detailW - personW);
+
             var lblPerson = new Label
             {
                 AutoSize = false,
                 Text = persons,
-                Location = new Point(rowWidth - 60, 0),
-                Width = 56,
+                Location = new Point(personX, 0),
+                Width = personW,
                 Height = rowH,
                 Font = personFont,
                 ForeColor = Color.FromArgb(130, 128, 122),
@@ -656,12 +668,32 @@ namespace Agile_Project.Views.Forms
             };
             row.Controls.Add(lblPerson);
 
+            if (canDelete)
+            {
+                var btnDel = new Button
+                {
+                    Text = "",
+                    Location = new Point(delBtnX, (rowH - delBtnH) / 2),
+                    Size = new Size(delBtnW, delBtnH),
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(160, 45, 45),
+                    Cursor = Cursors.Hand,
+                    Padding = new Padding(0),
+                    Margin = new Padding(0),
+                    TabStop = false,
+                    FlatAppearance = { BorderSize = 0 }
+                };
+                btnDel.Click += (s, e) => DeleteTask(task);
+                row.Controls.Add(btnDel);
+                btnDel.BringToFront();
+            }
+
             var btnDetail = new Label
             {
                 AutoSize = false,
                 Text = "...",
-                Location = new Point(rowWidth - 22, 0),
-                Width = 22,
+                Location = new Point(rowWidth - detailW, 0),
+                Width = detailW,
                 Height = rowH,
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = Color.FromArgb(150, 148, 140),
@@ -754,6 +786,18 @@ namespace Agile_Project.Views.Forms
                 _storyCtrl.DeleteUserStory(story.UserStoryId);
                 RefreshBoard();
             }
+        }
+
+        private void DeleteTask(ProjectTask task)
+        {
+            var r = MessageBox.Show($"Delete task \"{task.Title}\"?",
+                "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (r != DialogResult.Yes) return;
+
+            var (ok, msg) = _taskCtrl.DeleteTask(task.TaskId);
+            if (!ok)
+                MessageBox.Show(msg, "Cannot delete", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            RefreshBoard();
         }
 
         private void OpenViewTasksForm(UserStory story)

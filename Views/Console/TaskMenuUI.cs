@@ -32,6 +32,7 @@ namespace Agile_Project.Views.Console
                 System.Console.WriteLine("[5] Assign person to task");
                 System.Console.WriteLine("[6] Remove person from task");
                 System.Console.WriteLine("[7] View task report");
+                System.Console.WriteLine("[8] Delete task");
                 System.Console.WriteLine("[0] Back");
                 System.Console.Write("Choose: ");
 
@@ -44,6 +45,7 @@ namespace Agile_Project.Views.Console
                     case "5": AssignPerson(); break;
                     case "6": RemovePerson(); break;
                     case "7": ViewTaskReport(); break;
+                    case "8": DeleteTask(); break;
                     case "0": return;
                     default:
                         System.Console.WriteLine("Invalid option.");
@@ -231,6 +233,24 @@ namespace Agile_Project.Views.Console
 
             var report = _taskController.GetTaskReport(taskId);
             System.Console.WriteLine(report);
+            ConsoleUI.Pause();
+        }
+
+        private void DeleteTask()
+        {
+            System.Console.Clear();
+            System.Console.WriteLine("=== DELETE TASK ===");
+            int storyId = PickUserStory();
+            if (storyId < 0) return;
+
+            var tasks = _taskController.GetByUserStory(storyId);
+            foreach (var t in tasks)
+                System.Console.WriteLine($"[{t.TaskId}] {t.Title} | State: {t.State}");
+            System.Console.Write("Enter Task ID: ");
+            if (!int.TryParse(System.Console.ReadLine(), out int taskId)) return;
+
+            var (ok, msg) = _taskController.DeleteTask(taskId);
+            System.Console.WriteLine(msg);
             ConsoleUI.Pause();
         }
     }

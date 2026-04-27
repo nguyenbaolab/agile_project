@@ -85,6 +85,17 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
+        public void Delete(int taskId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            // TaskPersons rows are removed by ON DELETE CASCADE
+            var cmd = new MySqlCommand(
+                "DELETE FROM Tasks WHERE TaskId=@Id", conn);
+            cmd.Parameters.AddWithValue("@Id", taskId);
+            cmd.ExecuteNonQuery();
+        }
+
         public int AddAndGetId(ProjectTask task)
         {
             using var conn = DatabaseConnection.GetConnection();
