@@ -22,7 +22,9 @@ namespace Agile_Project.Views.Console
 
                 System.Console.WriteLine("[1] Manage Projects");
 
-                if (PermissionService.CanDo("ManageUserStory"))
+                // Dev can change story state, so the menu is open to anyone with that right.
+                // Add/Edit/Delete inside it stay gated on ManageUserStory.
+                if (PermissionService.CanDo("ChangeUserStoryState"))
                     System.Console.WriteLine("[2] Manage User Stories");
 
                 System.Console.WriteLine("[3] Manage Tasks");
@@ -35,7 +37,7 @@ namespace Agile_Project.Views.Console
                         new ProjectMenuUI(_projectController).Run();
                         break;
                     case "2":
-                        if (PermissionService.CanDo("ManageUserStory"))
+                        if (PermissionService.CanDo("ChangeUserStoryState"))
                             new UserStoryMenuUI(_projectController, _userStoryController).Run();
                         else
                         {

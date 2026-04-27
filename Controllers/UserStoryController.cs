@@ -85,6 +85,13 @@ namespace Agile_Project.Controllers
                 if (!CanMoveToSprint(story))
                     return (false, "Dependencies are not in sprint or done yet.");
 
+                // Spec: when a story enters the sprint, all its tasks reset to ToBeDone.
+                _taskRepo.ResetAllToToBeDone(storyId);
+            }
+
+            if (newState == UserStoryState.ProjectBacklog)
+            {
+                // Spec invariant: tasks of a backlog story are always ToBeDone.
                 _taskRepo.ResetAllToToBeDone(storyId);
             }
 

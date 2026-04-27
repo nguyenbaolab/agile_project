@@ -84,7 +84,7 @@ namespace Agile_Project.Models.Repositories
         {
             using var conn = DatabaseConnection.GetConnection();
             conn.Open();
-            // CASCADE sẽ tự xóa Tasks và TaskPersons liên quan
+            // ON DELETE CASCADE removes all Tasks, TaskPersons, TaskTeams and dependency rows.
             var cmd = new MySqlCommand(
                 "DELETE FROM UserStories WHERE UserStoryId=@Id", conn);
             cmd.Parameters.AddWithValue("@Id", storyId);

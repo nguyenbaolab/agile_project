@@ -1,4 +1,5 @@
 using Agile_Project.Controllers;
+using Agile_Project.Models;
 using Agile_Project.Models.Entities;
 
 namespace Agile_Project.Views.Console
@@ -16,23 +17,27 @@ namespace Agile_Project.Views.Console
 
         public void Run()
         {
+            // Add/Delete are Admin/PO only; state change is also open to Dev.
+            bool canManage = PermissionService.CanDo("ManageUserStory");
+            bool canChangeState = PermissionService.CanDo("ChangeUserStoryState");
+
             while (true)
             {
                 System.Console.Clear();
                 System.Console.WriteLine("=== USER STORY MENU ===");
                 System.Console.WriteLine("[1] View user stories by project");
-                System.Console.WriteLine("[2] Add user story");
-                System.Console.WriteLine("[3] Delete user story");
-                System.Console.WriteLine("[4] Change user story state");
+                if (canManage) System.Console.WriteLine("[2] Add user story");
+                if (canManage) System.Console.WriteLine("[3] Delete user story");
+                if (canChangeState) System.Console.WriteLine("[4] Change user story state");
                 System.Console.WriteLine("[0] Back");
                 System.Console.Write("Choose: ");
 
                 switch (System.Console.ReadLine())
                 {
                     case "1": ViewByProject(); break;
-                    case "2": AddUserStory(); break;
-                    case "3": DeleteUserStory(); break;
-                    case "4": ChangeState(); break;
+                    case "2": if (canManage) AddUserStory(); else Deny(); break;
+                    case "3": if (canManage) DeleteUserStory(); else Deny(); break;
+                    case "4": if (canChangeState) ChangeState(); else Deny(); break;
                     case "0": return;
                     default:
                         System.Console.WriteLine("Invalid option.");
@@ -40,6 +45,12 @@ namespace Agile_Project.Views.Console
                         break;
                 }
             }
+        }
+
+        private static void Deny()
+        {
+            System.Console.WriteLine("Permission denied.");
+            ConsoleUI.Pause();
         }
 
         private int PickProject()
@@ -89,7 +100,7 @@ namespace Agile_Project.Views.Console
             int.TryParse(System.Console.ReadLine(), out int priority);
 
             var result = _storyController.AddUserStory(projectId, title, desc, priority);
-            System.Console.WriteLine(result ? "User story added!" : "Failed ó title cannot be empty.");
+            System.Console.WriteLine(result ? "User story added!" : "Failed ù title cannot be empty.");
             ConsoleUI.Pause();
         }
 

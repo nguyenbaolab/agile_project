@@ -85,15 +85,39 @@ namespace Agile_Project.Models.Repositories
             cmd.ExecuteNonQuery();
         }
 
+        // Cuts every link between this person and this project in one transaction:
+        // team memberships in the project, task assignments in the project, and the
+        // ProjectPersons row itself. The person then disappears from the project's reports.
         public void RemoveFromProject(int projectId, int personId)
         {
             using var conn = DatabaseConnection.GetConnection();
             conn.Open();
-            var cmd = new MySqlCommand(
-                "DELETE FROM ProjectPersons WHERE ProjectId=@ProjectId AND PersonId=@PersonId", conn);
-            cmd.Parameters.AddWithValue("@ProjectId", projectId);
-            cmd.Parameters.AddWithValue("@PersonId", personId);
-            cmd.ExecuteNonQuery();
+            using var tx = conn.BeginTransaction();
+
+            var delTeamMembers = new MySqlCommand(@"
+                DELETE tm FROM TeamMembers tm
+                JOIN Teams t ON tm.TeamId = t.TeamId
+                WHERE t.ProjectId = @ProjectId AND tm.PersonId = @PersonId", conn, tx);
+            delTeamMembers.Parameters.AddWithValue("@ProjectId", projectId);
+            delTeamMembers.Parameters.AddWithValue("@PersonId", personId);
+            delTeamMembers.ExecuteNonQuery();
+
+            var delTaskPersons = new MySqlCommand(@"
+                DELETE tp FROM TaskPersons tp
+                JOIN Tasks ta ON tp.TaskId = ta.TaskId
+                JOIN UserStories us ON ta.UserStoryId = us.UserStoryId
+                WHERE us.ProjectId = @ProjectId AND tp.PersonId = @PersonId", conn, tx);
+            delTaskPersons.Parameters.AddWithValue("@ProjectId", projectId);
+            delTaskPersons.Parameters.AddWithValue("@PersonId", personId);
+            delTaskPersons.ExecuteNonQuery();
+
+            var delProjectPerson = new MySqlCommand(
+                "DELETE FROM ProjectPersons WHERE ProjectId=@ProjectId AND PersonId=@PersonId", conn, tx);
+            delProjectPerson.Parameters.AddWithValue("@ProjectId", projectId);
+            delProjectPerson.Parameters.AddWithValue("@PersonId", personId);
+            delProjectPerson.ExecuteNonQuery();
+
+            tx.Commit();
         }
 
         public void RemoveFromTask(int taskId, int personId)

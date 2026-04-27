@@ -11,5 +11,14 @@ namespace Agile_Project.Models.Entities
         public int ProjectId { get; set; }
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
+
+        // Single-line summary used by reports and console output.
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder("Project #" + ProjectId + ": " + Name);
+            if (!string.IsNullOrEmpty(Description))
+                sb.Append(" — " + Description);
+            return sb.ToString();
+        }
     }
 }

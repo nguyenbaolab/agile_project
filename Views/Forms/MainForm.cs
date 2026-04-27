@@ -13,6 +13,7 @@ namespace Agile_Project.Views.Forms
         private readonly IProjectController _projectCtrl = new ProjectController();
         private readonly IUserStoryController _storyCtrl = new UserStoryController();
         private readonly ITaskController _taskCtrl = new TaskController();
+        private readonly ITeamController _teamCtrl = new TeamController();
 
         private List<Project> _projects = new();
         private Project? _selectedProject;
@@ -23,6 +24,7 @@ namespace Agile_Project.Views.Forms
         private Button btnEditProject = new();
         private Button btnDeleteProject = new();
         private Button btnManagePersons = new();
+        private Button btnTeams = new();
         private Button btnReports = new();
 
         // Board columns
@@ -126,6 +128,9 @@ namespace Agile_Project.Views.Forms
             btnManagePersons = MakeTopBtn("Persons", Color.FromArgb(60, 60, 58));
             btnManagePersons.Click += BtnManagePersons_Click;
 
+            btnTeams = MakeTopBtn("Teams", Color.FromArgb(60, 60, 58));
+            btnTeams.Click += BtnTeams_Click;
+
             btnReports = MakeTopBtn("Reports", Color.FromArgb(15, 110, 86));
             btnReports.Click += BtnReports_Click;
 
@@ -133,6 +138,7 @@ namespace Agile_Project.Views.Forms
             btnEditProject.Visible = PermissionService.CanDo("ManageProject");
             btnDeleteProject.Visible = PermissionService.CanDo("ManageProject");
             btnManagePersons.Visible = PermissionService.CanDo("AssignPerson");
+            btnTeams.Visible = PermissionService.CanDo("ViewTeam");
 
             var lblUser = new Label
             {
@@ -149,7 +155,7 @@ namespace Agile_Project.Views.Forms
             flow.Controls.AddRange(new Control[] {
                 lblProject, cmbProjects,
                 btnNewProject, btnEditProject, btnDeleteProject,
-                btnManagePersons, btnReports,
+                btnManagePersons, btnTeams, btnReports,
                 lblUser, btnLogout
             });
 
@@ -375,7 +381,7 @@ namespace Agile_Project.Views.Forms
             y += lblMeta.PreferredSize.Height + 8;
 
             int btnX = 10;
-            if (PermissionService.CanDo("ManageUserStory"))
+            if (PermissionService.CanDo("ChangeUserStoryState"))
             {
                 var btnMove = MakeCardBtn("→ Move to Sprint", Color.FromArgb(83, 74, 183));
                 btnMove.Location = new Point(btnX, y);
@@ -473,7 +479,7 @@ namespace Agile_Project.Views.Forms
             }
 
             int btnX = 10;
-            if (PermissionService.CanDo("ManageUserStory"))
+            if (PermissionService.CanDo("ChangeUserStoryState"))
             {
                 var btnDone = MakeCardBtn("→ Mark Done", Color.FromArgb(15, 110, 86));
                 btnDone.Location = new Point(btnX, y);
@@ -551,7 +557,7 @@ namespace Agile_Project.Views.Forms
             y += lblMeta.PreferredSize.Height + 8;
 
             int btnX = 10;
-            if (PermissionService.CanDo("ManageUserStory"))
+            if (PermissionService.CanDo("ChangeUserStoryState"))
             {
                 var btnBack = MakeCardBtn("← Back to Sprint", Color.FromArgb(100, 100, 96));
                 btnBack.Location = new Point(btnX, y);
@@ -807,6 +813,7 @@ namespace Agile_Project.Views.Forms
                 story.Title,
                 _taskCtrl,
                 _projectCtrl,
+                _storyCtrl,
                 _selectedProject!.ProjectId);
             dlg.ShowDialog();
             RefreshBoard();
@@ -856,6 +863,13 @@ namespace Agile_Project.Views.Forms
         {
             if (_selectedProject == null) return;
             var dlg = new ManagePersonsDialog(_selectedProject, _projectCtrl);
+            dlg.ShowDialog();
+        }
+
+        private void BtnTeams_Click(object? s, EventArgs e)
+        {
+            if (_selectedProject == null) return;
+            var dlg = new ManageTeamsDialog(_selectedProject, _teamCtrl);
             dlg.ShowDialog();
         }
 

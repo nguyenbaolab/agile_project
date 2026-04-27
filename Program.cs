@@ -22,11 +22,11 @@ namespace Agile_Project
 
             DatabaseInitializer.Initialize();
 
-            bool useGUI = true ; // doi thanh false de chay Console //English version: change to false to run Console UI
+            // Switch to false to run the Console UI instead of the WinForms UI.
+            bool useGUI = true;
 
             if (useGUI)
             {
-                ApplicationConfiguration.Initialize();
                 Application.Run(new MainForm());
             }
             else

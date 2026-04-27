@@ -41,7 +41,7 @@ namespace Agile_Project.Views.Forms
         {
             var tabs = new TabControl { Dock = DockStyle.Fill };
 
-            // Tab "Add Person" — chỉ Admin
+            // "Add Person" tab is Admin-only.
             if (PermissionService.CanDo("ManagePerson"))
                 tabs.TabPages.Add(BuildAddTab());
 
@@ -50,7 +50,7 @@ namespace Agile_Project.Views.Forms
             Controls.Add(tabs);
         }
 
-        // Tab 1: Add Person (Admin only)
+        // Tab 1: Add Person (Admin and Product owner only)
 
         private TabPage BuildAddTab()
         {
@@ -167,7 +167,7 @@ namespace Agile_Project.Views.Forms
                 Margin = new Padding(0)
             };
 
-            // Remove from project — chỉ người có quyền AssignPerson (Admin/PO)
+            // Remove from project: Admin or PO only.
             if (PermissionService.CanDo("AssignPerson"))
             {
                 var btnRemove = new Button
@@ -239,7 +239,7 @@ namespace Agile_Project.Views.Forms
                 btnCol.Controls.Add(btnLink);
             }
 
-            // Delete person — Admin only
+            // Delete person — Admin and Product Owner could 
             if (PermissionService.CanDo("ManagePerson"))
             {
                 var btnDelete = new Button

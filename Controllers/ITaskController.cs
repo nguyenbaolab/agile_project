@@ -22,5 +22,10 @@ namespace Agile_Project.Controllers
         List<ProjectTask> GetByUserStory(int userStoryId);
         ProjectTask? GetById(int taskId);
         List<Person> GetAssignedPersons(int taskId);
+
+        (bool success, string message) AssignTeam(int taskId, int teamId);
+        bool RemoveTeam(int taskId, int teamId);
+        List<Team> GetAssignedTeams(int taskId);
+        List<Team> GetProjectTeams(int projectId);
     }
 }

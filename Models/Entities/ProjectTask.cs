@@ -28,5 +28,18 @@ namespace Agile_Project.Models.Entities
         public int Difficulty { get; set; } = 0;
         public string CategoryLabels { get; set; } = "";
         public int UserStoryId { get; set; }
+
+        // Single-line summary. Built with StringBuilder so optional fields can be appended cleanly.
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder("Task #" + TaskId + ": " + Title);
+            sb.Append(" | State: " + State);
+            sb.Append(" | Priority: " + Priority);
+            if (PlannedTime > 0 || ActualTime > 0)
+                sb.Append(" | " + PlannedTime.ToString("F1") + "h planned / " + ActualTime.ToString("F1") + "h actual");
+            if (!string.IsNullOrEmpty(CategoryLabels))
+                sb.Append(" | Labels: " + CategoryLabels);
+            return sb.ToString();
+        }
     }
 }

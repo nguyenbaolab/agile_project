@@ -191,6 +191,52 @@ namespace Agile_Project.Models.Repositories
             return list;
         }
 
+        public void AssignTeam(int taskId, int teamId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(
+                "INSERT IGNORE INTO TaskTeams (TaskId, TeamId) VALUES (@TaskId, @TeamId)", conn);
+            cmd.Parameters.AddWithValue("@TaskId", taskId);
+            cmd.Parameters.AddWithValue("@TeamId", teamId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void RemoveTeam(int taskId, int teamId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(
+                "DELETE FROM TaskTeams WHERE TaskId=@TaskId AND TeamId=@TeamId", conn);
+            cmd.Parameters.AddWithValue("@TaskId", taskId);
+            cmd.Parameters.AddWithValue("@TeamId", teamId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<Team> GetAssignedTeams(int taskId)
+        {
+            var list = new List<Team>();
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+            var cmd = new MySqlCommand(@"
+                SELECT t.* FROM Teams t
+                JOIN TaskTeams tt ON t.TeamId = tt.TeamId
+                WHERE tt.TaskId = @TaskId
+                ORDER BY t.Name", conn);
+            cmd.Parameters.AddWithValue("@TaskId", taskId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(new Team
+                {
+                    TeamId = Convert.ToInt32(reader["TeamId"]),
+                    ProjectId = reader["ProjectId"] == DBNull.Value ? 0 : Convert.ToInt32(reader["ProjectId"]),
+                    Name = reader["Name"].ToString()!
+                });
+            }
+            return list;
+        }
+
         private ProjectTask MapFromReader(MySqlDataReader reader)
         {
             return new ProjectTask

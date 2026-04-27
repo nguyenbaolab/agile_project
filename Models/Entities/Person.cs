@@ -17,5 +17,16 @@ namespace Agile_Project.Models.Entities
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
         public string ProfileRole { get; set; } = "Developer";
+
+        // Single-line summary used by reports and console output.
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder("Person #" + PersonId + ": " + Name);
+            if (!string.IsNullOrEmpty(Role))
+                sb.Append(" (" + Role + ")");
+            if (!string.IsNullOrEmpty(ProfileRole))
+                sb.Append(" [" + ProfileRole + "]");
+            return sb.ToString();
+        }
     }
 }

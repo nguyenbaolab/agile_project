@@ -11,15 +11,17 @@ namespace Agile_Project.Controllers
         private readonly ITaskRepository _taskRepo;
         private readonly IUserStoryRepository _storyRepo;
         private readonly IPersonRepository _personRepo;
+        private readonly ITeamRepository _teamRepo;
 
-        public TaskController(ITaskRepository taskRepo, IUserStoryRepository storyRepo, IPersonRepository personRepo)
+        public TaskController(ITaskRepository taskRepo, IUserStoryRepository storyRepo, IPersonRepository personRepo, ITeamRepository teamRepo)
         {
             _taskRepo = taskRepo;
             _storyRepo = storyRepo;
             _personRepo = personRepo;
+            _teamRepo = teamRepo;
         }
 
-        public TaskController() : this(new TaskRepository(), new UserStoryRepository(), new PersonRepository()) { }
+        public TaskController() : this(new TaskRepository(), new UserStoryRepository(), new PersonRepository(), new TeamRepository()) { }
 
         // Tasks
 
@@ -197,6 +199,37 @@ namespace Agile_Project.Controllers
 
         public List<Person> GetAssignedPersons(int taskId)
             => _taskRepo.GetAssignedPersons(taskId);
+
+        // Team assignment: only teams from the same project as the task's user story are accepted.
+
+        public (bool success, string message) AssignTeam(int taskId, int teamId)
+        {
+            var task = _taskRepo.GetById(taskId);
+            if (task == null) return (false, "Task not found.");
+
+            var story = _storyRepo.GetById(task.UserStoryId);
+            if (story == null) return (false, "User story not found.");
+
+            var team = _teamRepo.GetById(teamId);
+            if (team == null) return (false, "Team not found.");
+            if (team.ProjectId != story.ProjectId)
+                return (false, "Team does not belong to this project.");
+
+            _taskRepo.AssignTeam(taskId, teamId);
+            return (true, "Team assigned successfully.");
+        }
+
+        public bool RemoveTeam(int taskId, int teamId)
+        {
+            _taskRepo.RemoveTeam(taskId, teamId);
+            return true;
+        }
+
+        public List<Team> GetAssignedTeams(int taskId)
+            => _taskRepo.GetAssignedTeams(taskId);
+
+        public List<Team> GetProjectTeams(int projectId)
+            => _teamRepo.GetByProject(projectId);
 
         // Helpers
 

@@ -15,6 +15,7 @@ namespace Agile_Project.Database
             CreateDatabaseIfNotExists();
             CreateTables();
             AddAuthColumns();
+            AddTeamColumns();
             SeedDefaultAccounts();
             UpdateSystemAccountFlags();
             NormalizeLegacyPriorities();
@@ -74,9 +75,10 @@ namespace Agile_Project.Database
                 CREATE TABLE IF NOT EXISTS Teams (
                     TeamId INT AUTO_INCREMENT PRIMARY KEY,
                     Name VARCHAR(255) NOT NULL,
-                    Role VARCHAR(100)
+                    ProjectId INT NULL,
+                    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE
                 );
- 
+
                 CREATE TABLE IF NOT EXISTS Persons (
                     PersonId INT AUTO_INCREMENT PRIMARY KEY,
                     Name VARCHAR(255) NOT NULL,
@@ -127,6 +129,22 @@ namespace Agile_Project.Database
                     FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId) ON DELETE CASCADE,
                     FOREIGN KEY (PersonId) REFERENCES Persons(PersonId) ON DELETE CASCADE
                 );
+
+                CREATE TABLE IF NOT EXISTS TeamMembers (
+                    TeamId INT,
+                    PersonId INT,
+                    PRIMARY KEY (TeamId, PersonId),
+                    FOREIGN KEY (TeamId) REFERENCES Teams(TeamId) ON DELETE CASCADE,
+                    FOREIGN KEY (PersonId) REFERENCES Persons(PersonId) ON DELETE CASCADE
+                );
+
+                CREATE TABLE IF NOT EXISTS TaskTeams (
+                    TaskId INT,
+                    TeamId INT,
+                    PRIMARY KEY (TaskId, TeamId),
+                    FOREIGN KEY (TaskId) REFERENCES Tasks(TaskId) ON DELETE CASCADE,
+                    FOREIGN KEY (TeamId) REFERENCES Teams(TeamId) ON DELETE CASCADE
+                );
  
                 CREATE TABLE IF NOT EXISTS UserStoryDependencies (
                     UserStoryId INT,
@@ -157,6 +175,30 @@ namespace Agile_Project.Database
                 "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS Password VARCHAR(100) NULL",
                 "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS ProfileRole VARCHAR(50) DEFAULT 'Developer'",
                 "ALTER TABLE Persons ADD COLUMN IF NOT EXISTS IsSystemAccount TINYINT(1) DEFAULT 0"
+            };
+
+            foreach (var sql in alterStatements)
+            {
+                try
+                {
+                    using var cmd = new MySqlCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                }
+                catch { }
+            }
+        }
+
+        // Legacy DB backfill: add Teams.ProjectId, drop the obsolete Teams.Role column.
+        // TeamMembers and TaskTeams are created in CreateTables().
+        private static void AddTeamColumns()
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            var alterStatements = new[]
+            {
+                "ALTER TABLE Teams ADD COLUMN IF NOT EXISTS ProjectId INT NULL",
+                "ALTER TABLE Teams DROP COLUMN Role"
             };
 
             foreach (var sql in alterStatements)
@@ -201,7 +243,7 @@ namespace Agile_Project.Database
             }
         }
 
-        // FIX: update DB cũ đã seed trước khi có cột IsSystemAccount
+        // Backfill: mark seeded admin/po/dev as system accounts on legacy DBs that were seeded before this column existed.
         private static void UpdateSystemAccountFlags()
         {
             using var conn = DatabaseConnection.GetConnection();

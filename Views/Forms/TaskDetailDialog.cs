@@ -38,6 +38,9 @@ namespace Agile_Project.Views.Forms
         private ListBox lstPersons = new();
         private ComboBox cmbAssign = new();
 
+        // Dev sees this dialog as read-only. Only Admin/PO (AddTask permission) can edit task details.
+        private readonly bool _canEditDetails = PermissionService.CanDo("AddTask");
+
         public TaskDetailDialog(UserStory story, ProjectTask? existing,
             IProjectController projectCtrl, ITaskController taskCtrl)
         {
@@ -46,7 +49,7 @@ namespace Agile_Project.Views.Forms
             _projectCtrl = projectCtrl;
             _taskCtrl = taskCtrl;
 
-            Text = existing == null ? "Add Task" : "Task Detail";
+            Text = existing == null ? "Add Task" : (_canEditDetails ? "Task Detail" : "View Task");
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             FormBorderStyle = FormBorderStyle.Sizable;
@@ -61,6 +64,29 @@ namespace Agile_Project.Views.Forms
             BuildUI();
             LoadPersons();
             if (existing != null) FillData();
+            if (!_canEditDetails) DisableAllEditableControls();
+        }
+
+        // Lock every editable control for Dev. Lists stay enabled so they can scroll/inspect.
+        private void DisableAllEditableControls()
+        {
+            txtTitle.ReadOnly = true;
+            cboPriority.Enabled = false;
+            cboDifficulty.Enabled = false;
+            txtLabels.ReadOnly = true;
+            numPlannedTime.ReadOnly = true;
+            numPlannedTime.Increment = 0;
+            numActualTime.ReadOnly = true;
+            numActualTime.Increment = 0;
+            chkPlannedStart.AutoCheck = false;
+            chkPlannedEnd.AutoCheck = false;
+            chkActualStart.AutoCheck = false;
+            chkActualEnd.AutoCheck = false;
+            dtpPlannedStart.Enabled = false;
+            dtpPlannedEnd.Enabled = false;
+            dtpActualStart.Enabled = false;
+            dtpActualEnd.Enabled = false;
+            cmbState.Enabled = false;
         }
 
         private void BuildUI()
@@ -306,34 +332,38 @@ namespace Agile_Project.Views.Forms
 
             var btnCancel = new Button
             {
-                Text = "Cancel",
+                Text = _canEditDetails ? "Cancel" : "Close",
                 AutoSize = true,
                 DialogResult = DialogResult.Cancel,
                 FlatStyle = FlatStyle.Flat,
                 Margin = new Padding(6, 0, 0, 0),
                 FlatAppearance = { BorderColor = Color.FromArgb(200, 198, 193) }
             };
-
-            var btnSave = new Button
-            {
-                Text = "Save",
-                AutoSize = true,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(83, 74, 183),
-                ForeColor = Color.White,
-                Margin = new Padding(6, 0, 0, 0),
-                FlatAppearance = { BorderSize = 0 }
-            };
-            btnSave.Click += BtnSave_Click;
-
             btnPanel.Controls.Add(btnCancel);
-            btnPanel.Controls.Add(btnSave);
+
+            // Save is only shown for users who can edit task details (Admin/PO).
+            if (_canEditDetails)
+            {
+                var btnSave = new Button
+                {
+                    Text = "Save",
+                    AutoSize = true,
+                    FlatStyle = FlatStyle.Flat,
+                    BackColor = Color.FromArgb(83, 74, 183),
+                    ForeColor = Color.White,
+                    Margin = new Padding(6, 0, 0, 0),
+                    FlatAppearance = { BorderSize = 0 }
+                };
+                btnSave.Click += BtnSave_Click;
+                btnPanel.Controls.Add(btnSave);
+                AcceptButton = btnSave;
+            }
+
             layout.Controls.Add(btnPanel);
 
             scroll.Controls.Add(layout);
             Controls.Add(scroll);
 
-            AcceptButton = btnSave;
             CancelButton = btnCancel;
         }
 

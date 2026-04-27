@@ -17,5 +17,9 @@ namespace Agile_Project.Models.Repositories
         void RemovePerson(int taskId, int personId);
         void ResetAllToToBeDone(int userStoryId);
         List<Person> GetAssignedPersons(int taskId);
+
+        void AssignTeam(int taskId, int teamId);
+        void RemoveTeam(int taskId, int teamId);
+        List<Team> GetAssignedTeams(int taskId);
     }
 }

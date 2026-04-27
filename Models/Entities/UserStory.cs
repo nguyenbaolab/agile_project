@@ -21,5 +21,14 @@ namespace Agile_Project.Models.Entities
         public UserStoryState State { get; set; } = UserStoryState.ProjectBacklog;
         public int ProjectId { get; set; }
         public int? SprintId { get; set; }
+
+        // Single-line summary used by reports and console output.
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder("Story #" + UserStoryId + ": " + Title);
+            sb.Append(" | State: " + State);
+            sb.Append(" | Priority: " + Priority);
+            return sb.ToString();
+        }
     }
 }
